@@ -69,14 +69,44 @@ class User extends Authenticatable
         ];
     }
 
+    const ROLE_ADMIN  = 'admin';
+    const ROLE_TEAM   = 'team';
+    const ROLE_TRADE  = 'trade';
+    const ROLE_CLIENT = 'client';
+
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isTeam(): bool
+    {
+        return $this->role === self::ROLE_TEAM;
+    }
+
+    public function isTrade(): bool
+    {
+        return $this->role === self::ROLE_TRADE;
     }
 
     public function isClient(): bool
     {
-        return $this->role === 'client';
+        return $this->role === self::ROLE_CLIENT;
+    }
+
+    public function isAdminOrTeam(): bool
+    {
+        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_TEAM]);
+    }
+
+    public function roleBadge(): array
+    {
+        return match($this->role) {
+            self::ROLE_ADMIN  => ['label' => 'Admin',    'bg' => '#0f172a', 'color' => '#fff'],
+            self::ROLE_TEAM   => ['label' => 'Team',     'bg' => '#7c3aed', 'color' => '#fff'],
+            self::ROLE_TRADE  => ['label' => 'Trade',    'bg' => '#E8651A', 'color' => '#fff'],
+            default           => ['label' => 'Customer', 'bg' => '#e5e7eb', 'color' => '#374151'],
+        };
     }
 
     public function orders()

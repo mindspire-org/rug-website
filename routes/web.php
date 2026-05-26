@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\FilterController as AdminFilterController;
+use App\Http\Controllers\TradePortalController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -77,4 +78,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:sanctum', config('jets
     Route::resource('coupons', AdminCouponController::class);
     Route::get('/filters', [AdminFilterController::class, 'index'])->name('filters.index');
     Route::put('/filters', [AdminFilterController::class, 'update'])->name('filters.update');
+});
+
+// Trade Portal routes — requires trade (or admin/team) account
+Route::prefix('trade-portal')->name('trade.portal.')->middleware(['auth:sanctum', config('jetstream.auth_session'), 'trade'])->group(function () {
+    Route::get('/',         [TradePortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/projects', [TradePortalController::class, 'projects'])->name('projects');
+    Route::get('/quotes',   [TradePortalController::class, 'quotes'])->name('quotes');
+    Route::get('/samples',  [TradePortalController::class, 'samples'])->name('samples');
+    Route::get('/orders',   [TradePortalController::class, 'orders'])->name('orders');
+    Route::get('/account',  [TradePortalController::class, 'account'])->name('account');
 });

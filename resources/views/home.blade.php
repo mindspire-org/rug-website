@@ -7,25 +7,11 @@
      1. HERO — full-bleed, centered text, "Explore the Collection"
 ══════════════════════════════════════════════════════════════ --}}
 <section class="relative h-[85vh] min-h-[560px] flex items-center justify-center overflow-hidden">
-    {{-- Background: decorative rug-pattern gradient (no photo needed) --}}
-    <div class="absolute inset-0 bg-stone-800">
-        <svg class="absolute inset-0 w-full h-full opacity-[0.12]" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
-            <defs>
-                <pattern id="hero-rug" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-                    <rect width="80" height="80" fill="none"/>
-                    <rect x="4"  y="4"  width="72" height="72" fill="none" stroke="#d4b060" stroke-width="1"/>
-                    <rect x="14" y="14" width="52" height="52" fill="none" stroke="#c9903a" stroke-width="0.7"/>
-                    <rect x="24" y="24" width="32" height="32" fill="none" stroke="#d4b060" stroke-width="0.5"/>
-                    <circle cx="40" cy="40" r="7"  fill="none" stroke="#c9903a" stroke-width="0.6"/>
-                    <line x1="4"  y1="40" x2="14" y2="40" stroke="#d4b060" stroke-width="0.8"/>
-                    <line x1="66" y1="40" x2="76" y2="40" stroke="#d4b060" stroke-width="0.8"/>
-                    <line x1="40" y1="4"  x2="40" y2="14" stroke="#d4b060" stroke-width="0.8"/>
-                    <line x1="40" y1="66" x2="40" y2="76" stroke="#d4b060" stroke-width="0.8"/>
-                </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hero-rug)"/>
-        </svg>
-        <div class="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-900/40 to-stone-900/70"></div>
+    {{-- Background: COVER photo --}}
+    <div class="absolute inset-0">
+        <img src="{{ asset('images/cover.jpg') }}" alt="Costikyan Custom Carpet"
+             class="w-full h-full object-cover object-center">
+        <div class="absolute inset-0 bg-gradient-to-b from-stone-900/50 via-stone-900/30 to-stone-900/65"></div>
     </div>
 
     {{-- Centered content --}}
@@ -124,22 +110,11 @@
      3. WEAVE YOUR DREAM RUG — full-bleed dark photo section
 ══════════════════════════════════════════════════════════════ --}}
 <section class="relative h-[55vh] min-h-[420px] flex items-center justify-center overflow-hidden">
-    {{-- Dark gradient background with woven texture --}}
-    <div class="absolute inset-0 bg-stone-700">
-        <svg class="absolute inset-0 w-full h-full opacity-[0.15]" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">
-            <defs>
-                <pattern id="weave-bg" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <rect x="2" y="2" width="36" height="36" fill="none" stroke="#d4c090" stroke-width="0.8"/>
-                    <circle cx="20" cy="20" r="5" fill="none" stroke="#d4c090" stroke-width="0.6"/>
-                    <line x1="2"  y1="20" x2="8"  y2="20" stroke="#d4c090" stroke-width="0.5"/>
-                    <line x1="32" y1="20" x2="38" y2="20" stroke="#d4c090" stroke-width="0.5"/>
-                    <line x1="20" y1="2"  x2="20" y2="8"  stroke="#d4c090" stroke-width="0.5"/>
-                    <line x1="20" y1="32" x2="20" y2="38" stroke="#d4c090" stroke-width="0.5"/>
-                </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#weave-bg)"/>
-        </svg>
-        <div class="absolute inset-0 bg-gradient-to-b from-stone-900/50 to-stone-900/70"></div>
+    {{-- Background: Frame 427319720 photo --}}
+    <div class="absolute inset-0">
+        <img src="{{ asset('images/frame 427319720.png') }}" alt="Weave Your Dream Rug"
+             class="w-full h-full object-cover object-center">
+        <div class="absolute inset-0" style="background:rgba(18,18,18,0.52);"></div>
     </div>
 
     <div class="relative z-10 text-center px-6 max-w-xl">
@@ -179,14 +154,10 @@
         {{-- 3-column image cards --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-            {{-- Card 1: Truly Yours --}}
+            {{-- Card 1: Truly Yours — CARD 11 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
-                <div class="absolute inset-0 bg-gradient-to-br from-amber-800 via-stone-700 to-stone-900">
-                    <svg class="absolute inset-0 w-full h-full opacity-[0.12]" viewBox="0 0 300 375" preserveAspectRatio="xMidYMid slice">
-                        <defs><pattern id="c1" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="15" fill="none" stroke="#d4b060" stroke-width="0.8"/><rect x="5" y="5" width="40" height="40" fill="none" stroke="#d4b060" stroke-width="0.5"/></pattern></defs>
-                        <rect width="100%" height="100%" fill="url(#c1)"/>
-                    </svg>
-                </div>
+                <img src="{{ asset('images/card 11.png') }}" alt="Truly Yours"
+                     class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
                     <h3 class="font-serif text-xl font-bold mb-2">Truly Yours</h3>
@@ -194,14 +165,10 @@
                 </div>
             </div>
 
-            {{-- Card 2: Generational Craftsmanship --}}
+            {{-- Card 2: Generational Craftsmanship — CARD 10 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
-                <div class="absolute inset-0 bg-gradient-to-br from-stone-600 via-amber-900 to-stone-800">
-                    <svg class="absolute inset-0 w-full h-full opacity-[0.12]" viewBox="0 0 300 375" preserveAspectRatio="xMidYMid slice">
-                        <defs><pattern id="c2" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse"><rect x="5" y="5" width="30" height="30" fill="none" stroke="#d4b060" stroke-width="0.8"/><line x1="5" y1="20" x2="35" y2="20" stroke="#d4b060" stroke-width="0.4"/><line x1="20" y1="5" x2="20" y2="35" stroke="#d4b060" stroke-width="0.4"/></pattern></defs>
-                        <rect width="100%" height="100%" fill="url(#c2)"/>
-                    </svg>
-                </div>
+                <img src="{{ asset('images/card 10.png') }}" alt="Generational Craftsmanship"
+                     class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
                     <h3 class="font-serif text-xl font-bold mb-2">Generational Craftsmanship</h3>
@@ -209,14 +176,10 @@
                 </div>
             </div>
 
-            {{-- Card 3: Finishing Care --}}
+            {{-- Card 3: Finishing Care — CARD 9 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
-                <div class="absolute inset-0 bg-gradient-to-br from-stone-500 via-stone-700 to-stone-900">
-                    <svg class="absolute inset-0 w-full h-full opacity-[0.12]" viewBox="0 0 300 375" preserveAspectRatio="xMidYMid slice">
-                        <defs><pattern id="c3" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse"><rect x="8" y="8" width="44" height="44" fill="none" stroke="#d4b060" stroke-width="0.8"/><rect x="18" y="18" width="24" height="24" fill="none" stroke="#c9903a" stroke-width="0.5"/></pattern></defs>
-                        <rect width="100%" height="100%" fill="url(#c3)"/>
-                    </svg>
-                </div>
+                <img src="{{ asset('images/card 9.png') }}" alt="Finishing Care"
+                     class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
                     <h3 class="font-serif text-xl font-bold mb-2">Finishing Care</h3>

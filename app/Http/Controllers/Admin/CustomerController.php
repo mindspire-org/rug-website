@@ -10,7 +10,9 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::where('role', 'client')->latest();
+        $query = User::withCount('orders')
+            ->whereIn('role', [\App\Models\User::ROLE_CLIENT, \App\Models\User::ROLE_TRADE])
+            ->latest();
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')

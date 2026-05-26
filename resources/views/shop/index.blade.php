@@ -42,7 +42,13 @@
             {{-- Sort Dropdown ── --}}
             <form method="GET" action="{{ route('shop.index') }}" class="flex-shrink-0">
                 @foreach(request()->except('sort') as $k => $v)
-                    <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                    @if(is_array($v))
+                        @foreach($v as $item)
+                            <input type="hidden" name="{{ $k }}[]" value="{{ $item }}">
+                        @endforeach
+                    @else
+                        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                    @endif
                 @endforeach
                 <div class="relative" style="width:210px">
                     <select name="sort" onchange="this.form.submit()"

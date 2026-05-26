@@ -13,11 +13,6 @@ use Stripe\PaymentIntent;
 
 class CheckoutController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     private function getCart(): Cart
     {
         return Cart::where('user_id', Auth::id())->with('items.product')->firstOrFail();

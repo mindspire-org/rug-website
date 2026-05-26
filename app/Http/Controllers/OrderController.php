@@ -8,11 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     public function index()
     {
         $orders = Auth::user()->orders()->with('items')->latest()->paginate(10);
