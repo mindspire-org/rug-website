@@ -1,6 +1,6 @@
 @props(['style' => session('flash.bannerStyle', 'success'), 'message' => session('flash.banner')])
 
-<div x-data="{{ json_encode(['show' => true, 'style' => $style, 'message' => $message]) }}"
+<div x-data="{ show: true, style: {{ Js::from($style) }}, message: {{ Js::from($message) }} }"
     :class="{ 'bg-indigo-500': style == 'success', 'bg-red-700': style == 'danger', 'bg-yellow-500': style == 'warning', 'bg-gray-500': style != 'success' && style != 'danger' && style != 'warning'}"
             style="display: none;"
             x-show="show && message"

@@ -1,5 +1,8 @@
 @extends('layouts.site')
 @section('title', $product->name)
+@section('meta_description', Str::limit(strip_tags($product->description ?? 'Handcrafted ' . $product->name . ' rug by Costikyan Custom Carpet. Available in multiple sizes and finishes.'), 155))
+@section('og_type', 'product')
+@section('og_image', $product->primary_image_url)
 
 @php
     // Determine product type for conditional sections
@@ -34,8 +37,21 @@
 @section('content')
 <div class="bg-white" x-data="{
     imgIdx: 0,
-    images: {{ json_encode($images->map(fn($i) => asset('storage/'.$i->path))->toArray() ?: [$primaryImg]) }},
-    selectedSize: '6x9',
+    images: {{ json_encode($images->map(fn($i) => route('media.show', ['path' => $i->path]))->toArray() ?: [$primaryImg]) }},
+    @php
+        $dimPrices = $product->dimensionPrices;
+        $hasDimPrices = $dimPrices->count() > 0;
+        $firstDim = $dimPrices->firstWhere('is_default') ?? $dimPrices->first();
+    @endphp
+    @if($hasDimPrices)
+    selectedSize: '{{ $firstDim?->id ?? 'custom' }}',
+    dimPrices: {{ json_encode($dimPrices->mapWithKeys(fn($d) => [$d->id => ['price'=>$d->price,'sale_price'=>$d->sale_price,'label'=>$d->label,'width'=>$d->width,'length'=>$d->length,'stock'=>$d->stock]])->toArray()) }},
+    sizeModifiers: {},
+    @else
+    selectedSize: '{{ $product->sizes->first()?->label ?? '6x9' }}',
+    dimPrices: {},
+    sizeModifiers: {{ json_encode($product->sizes->pluck('price_modifier', 'label')->toArray() ?: ['6x9'=>1,'8x10'=>1.33,'9x12'=>1.5,'10x14'=>1.94,'12x15'=>2.5]) }},
+    @endif
     selectedColor: '{{ $product->colors->first()?->color_name ?? '' }}',
     selectedFinish: 'Machine Narrow Binding',
     qty: 1,
@@ -43,9 +59,85 @@
     delivery: 'whiteglove',
     showZip: false,
     zip: '',
+    showEmailModal: false,
+    showSaveModal: false,
+    showRoomModal: false,
+    emailNotes: '',
+    saveNotes: '',
+    emailAddress: '{{ Auth::check() ? Auth::user()->email : '' }}',
     get currentImg() { return this.images[this.imgIdx] ?? '{{ $primaryImg }}'; },
     prev() { this.imgIdx = (this.imgIdx - 1 + this.images.length) % this.images.length; },
     next() { this.imgIdx = (this.imgIdx + 1) % this.images.length; },
+    get estimateTotal() {
+        let sizePrice = 0;
+        if (Object.keys(this.dimPrices).length > 0) {
+            let dim = this.dimPrices[this.selectedSize];
+            sizePrice = dim ? (dim.sale_price ?? dim.price) : {{ $product->sale_price ?? $product->price }};
+        } else {
+            let base = {{ $product->sale_price ?? $product->price }};
+            let modifier = this.sizeModifiers[this.selectedSize] ?? 1;
+            let customSqFt = 1;
+            if (this.selectedSize === 'custom' && this.wFt && this.hFt) {
+                let w = parseFloat(this.wFt) + (parseFloat(this.wIn || 0) / 12);
+                let h = parseFloat(this.hFt) + (parseFloat(this.hIn || 0) / 12);
+                customSqFt = Math.max(1, w * h / 54);
+            }
+            sizePrice = base * (this.selectedSize === 'custom' ? customSqFt : modifier);
+        }
+        let add = 0;
+        if (this.addOns.protector) add += 120;
+        if (this.addOns.padding) add += 190;
+        if (this.addOns.spot) add += 19.99;
+        let del = 0;
+        if (this.delivery === 'whiteglove') del = 250;
+        else if (this.delivery === 'ups') del = 500;
+        else if (this.delivery === 'pickup') del = 50;
+        return sizePrice + add + del;
+    },
+    roomGenerating: false,
+    roomResultUrl: '',
+    roomError: '',
+    roomStatus: '',
+    roomCredits: {{ Auth::check() ? (int) Auth::user()->ai_credits : 0 }},
+    resetRoom() { this.roomResultUrl = ''; this.roomError = ''; this.roomStatus = ''; },
+    async generateRoom(e) {
+        const form = e.target;
+        if (!form.room_photo.files.length) return;
+        this.roomError = '';
+        this.roomResultUrl = '';
+        this.roomGenerating = true;
+        const msgs = ['Analyzing your room…', 'Placing your rug…', 'Matching lighting & shadows…', 'Adding finishing touches…'];
+        let i = 0; this.roomStatus = msgs[0];
+        const ticker = setInterval(() => { i = (i + 1) % msgs.length; this.roomStatus = msgs[i]; }, 2800);
+        try {
+            const res = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new FormData(form),
+            });
+            let json = {};
+            try { json = await res.json(); } catch (_) {}
+            if (res.ok && json.success) {
+                this.roomResultUrl = json.url;
+                if (typeof json.credits !== 'undefined') this.roomCredits = json.credits;
+                form.reset();
+                document.getElementById('roomPreview')?.classList.add('hidden');
+                document.getElementById('roomFilename').textContent = 'Click to upload room photo';
+            } else {
+                this.roomError = (json && json.error) ? json.error : 'Generation failed. Please try again.';
+                if (typeof json.credits !== 'undefined') this.roomCredits = json.credits;
+            }
+        } catch (err) {
+            this.roomError = 'Something went wrong. Please check your connection and try again.';
+        } finally {
+            clearInterval(ticker);
+            this.roomGenerating = false;
+        }
+    }
 }">
 
     {{-- ── TOP BAR ── --}}
@@ -70,9 +162,24 @@
                 <p style="font-family:'Lusitana',serif; font-size:12px; font-weight:400; letter-spacing:0.1em; color:#121212; text-transform:uppercase;" class="mb-1">
                     {{ $badgeLabel }}
                 </p>
-                <h1 style="font-family:'Lusitana',serif; font-size:28px; font-weight:700; line-height:1.3; color:#121212;" class="mb-1">
-                    {{ $product->name }}
-                </h1>
+                @php
+                    $isFav = auth()->check() && auth()->user()->wishlist->contains('product_id', $product->id);
+                @endphp
+                <div class="flex items-start justify-between gap-3 mb-1">
+                    <h1 style="font-family:'Lusitana',serif; font-size:28px; font-weight:700; line-height:1.3; color:#121212;">
+                        {{ $product->name }}
+                    </h1>
+                    <button class="wishlist-toggle flex-shrink-0 transition-colors {{ $isFav ? 'text-red-500' : 'text-stone-400 hover:text-stone-700' }}"
+                            data-product-id="{{ $product->id }}"
+                            data-in-wishlist="{{ $isFav ? 'true' : 'false' }}"
+                            data-authenticated="{{ auth()->check() ? 'true' : 'false' }}"
+                            style="background:none; border:none; cursor:pointer; padding:4px; margin-top:2px;"
+                            title="{{ $isFav ? 'Remove from favorites' : 'Add to favorites' }}">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" {!! $isFav ? 'fill="currentColor" stroke="none"' : 'fill="none" stroke="currentColor"' !!} stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                    </button>
+                </div>
                 <p style="font-size:12px; color:rgba(18,18,18,0.6);" class="mb-0.5">
                     Construction: {{ $product->material ?? 'Hand-knotted' }}
                 </p>
@@ -82,7 +189,11 @@
 
                 {{-- Price --}}
                 <p style="font-family:'Lusitana',serif; font-size:20px; font-weight:700; color:#121212;" class="mb-3">
-                    From ${{ number_format($product->sale_price ?? $product->price, 0) }}
+                    @if($hasDimPrices)
+                    <span x-text="dimPrices[selectedSize] ? '$' + (dimPrices[selectedSize].sale_price ?? dimPrices[selectedSize].price).toLocaleString('en-US', {maximumFractionDigits:0}) : '${{ number_format($product->sale_price ?? $product->price, 0) }}'">From ${{ number_format($firstDim?->effective_price ?? $product->effective_price, 0) }}</span>
+                    @else
+                    <span x-text="'$' + ({{ $product->sale_price ?? $product->price }} * (sizeModifiers[selectedSize] ?? 1)).toLocaleString('en-US', {maximumFractionDigits:0})">From ${{ number_format($product->sale_price ?? $product->price, 0) }}</span>
+                    @endif
                 </p>
 
                 {{-- Short description --}}
@@ -131,7 +242,7 @@
                             :class="{{ $i }} === imgIdx ? 'ring-2 ring-[#121212]' : 'ring-1 ring-stone-200'"
                             class="flex-shrink-0 overflow-hidden"
                             style="width:60px; height:60px; border-radius:2px;">
-                        <img src="{{ asset('storage/'.$img->path) }}" class="w-full h-full object-cover" alt="">
+                        <img src="{{ route('media.show', ['path' => $img->path]) }}" class="w-full h-full object-cover" alt="" loading="lazy">
                     </button>
                     @endforeach
                 </div>
@@ -162,19 +273,18 @@
                 <div class="mb-2">
                     <div class="flex items-center justify-between mb-2">
                         <p style="font-family:'Lusitana',serif; font-size:14px; font-weight:400; color:#121212;">See it in your room:</p>
-                        <button style="font-size:12px; color:rgba(18,18,18,0.5);">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="inline">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-                            </svg>
-                        </button>
+                        @auth
+                        <span style="font-size:11px; color:#E8651A; font-weight:600;">{{ Auth::user()->ai_credits }} credits left</span>
+                        @endauth
                     </div>
-                    <div class="flex flex-col items-center justify-center"
-                         style="border:1px dashed rgba(18,18,18,0.2); border-radius:2px; height:140px; background:#fafafa; cursor:pointer;">
+                    <button @click="showRoomModal = true"
+                            class="w-full flex flex-col items-center justify-center transition-colors hover:bg-stone-50"
+                            style="border:1px dashed rgba(18,18,18,0.2); border-radius:2px; height:140px; background:#fafafa; cursor:pointer;">
                         <svg width="28" height="28" fill="none" stroke="rgba(18,18,18,0.35)" stroke-width="1.5" viewBox="0 0 24 24" class="mb-2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                         </svg>
                         <span style="font-size:11px; color:rgba(18,18,18,0.45); letter-spacing:0.06em; text-transform:uppercase;">Upload Room Photo</span>
-                    </div>
+                    </button>
                 </div>
 
             </div>{{-- /left --}}
@@ -186,8 +296,13 @@
                 {{-- Panel header --}}
                 <div class="flex items-center justify-between mb-5">
                     <h2 style="font-family:'Lusitana',serif; font-size:22px; font-weight:700; color:#121212;">Summary</h2>
-                    <button class="text-stone-400 hover:text-red-400">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <button class="wishlist-toggle transition-colors {{ $isFav ? 'text-red-500' : 'text-stone-400 hover:text-red-400' }}"
+                            data-product-id="{{ $product->id }}"
+                            data-in-wishlist="{{ $isFav ? 'true' : 'false' }}"
+                            data-authenticated="{{ auth()->check() ? 'true' : 'false' }}"
+                            style="background:none; border:none; cursor:pointer; padding:4px;"
+                            title="{{ $isFav ? 'Remove from favorites' : 'Add to favorites' }}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" {!! $isFav ? 'fill="currentColor" stroke="none"' : 'fill="none" stroke="currentColor"' !!} stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                         </svg>
                     </button>
@@ -200,14 +315,35 @@
                     {{-- Standard size pills --}}
                     <div style="background:#f5f5f5; border-radius:4px; padding:10px 12px;" class="mb-2">
                         <div class="flex flex-wrap gap-2">
-                            @foreach(['6x9','8x10','9x12','10x14','12x15'] as $sz)
-                            <button @click="selectedSize = '{{ $sz }}'; customOpen = false"
-                                    :class="selectedSize === '{{ $sz }}' ? 'border-[#121212] bg-white font-semibold' : 'border-transparent bg-transparent text-[rgba(18,18,18,0.6)]'"
-                                    class="border transition-all"
-                                    style="padding:5px 14px; font-size:13px; border-radius:4px; color:#121212;">
-                                {{ $sz }}
-                            </button>
-                            @endforeach
+                            @if($hasDimPrices)
+                                @foreach($dimPrices as $dim)
+                                <button @click="selectedSize = '{{ $dim->id }}'; customOpen = false"
+                                        :class="selectedSize === '{{ $dim->id }}' ? 'border-[#121212] bg-white font-semibold' : 'border-transparent bg-transparent text-[rgba(18,18,18,0.6)]'"
+                                        class="border transition-all"
+                                        style="padding:5px 14px; font-size:13px; border-radius:4px; color:#121212;">
+                                    {{ $dim->label ?: $dim->dimension_display }}
+                                </button>
+                                @endforeach
+                            @else
+                                @foreach($product->sizes as $sz)
+                                <button @click="selectedSize = '{{ $sz->label }}'; customOpen = false"
+                                        :class="selectedSize === '{{ $sz->label }}' ? 'border-[#121212] bg-white font-semibold' : 'border-transparent bg-transparent text-[rgba(18,18,18,0.6)]'"
+                                        class="border transition-all"
+                                        style="padding:5px 14px; font-size:13px; border-radius:4px; color:#121212;">
+                                    {{ $sz->label }}
+                                </button>
+                                @endforeach
+                                @if($product->sizes->isEmpty())
+                                @foreach(['6x9','8x10','9x12','10x14','12x15'] as $sz)
+                                <button @click="selectedSize = '{{ $sz }}'; customOpen = false"
+                                        :class="selectedSize === '{{ $sz }}' ? 'border-[#121212] bg-white font-semibold' : 'border-transparent bg-transparent text-[rgba(18,18,18,0.6)]'"
+                                        class="border transition-all"
+                                        style="padding:5px 14px; font-size:13px; border-radius:4px; color:#121212;">
+                                    {{ $sz }}
+                                </button>
+                                @endforeach
+                                @endif
+                            @endif
                         </div>
 
                         {{-- CUSTOM SIZE accordion row --}}
@@ -385,7 +521,7 @@
                         {{-- White Glove --}}
                         <div class="border" style="border-color:rgba(18,18,18,0.15); border-radius:3px; padding:12px;">
                             <div class="flex items-start gap-3">
-                                <input type="checkbox" x-model="(delivery === 'whiteglove')"
+                                <input type="checkbox" :checked="delivery === 'whiteglove'"
                                        @change="delivery = 'whiteglove'"
                                        class="mt-0.5 w-4 h-4 cursor-pointer flex-shrink-0" style="accent-color:#121212;" checked>
                                 <div class="flex-1">
@@ -483,21 +619,40 @@
                     </div>
                 </form>
 
-                <button type="button"
-                        class="w-full flex items-center justify-center border transition-colors hover:bg-stone-50 mb-2"
-                        style="height:44px; border-color:rgba(18,18,18,0.25); border-radius:3px;
-                               font-family:'Lusitana',serif; font-size:14px; color:#121212;">
+                @auth
+                <form action="{{ route('sample.request.product', $product) }}" method="POST" class="mb-2">
+                    @csrf
+                    <button type="submit"
+                            class="w-full flex items-center justify-center border transition-colors hover:bg-stone-50"
+                            style="height:44px; border-color:rgba(18,18,18,0.25); border-radius:3px;
+                                   font-family:'Lusitana',serif; font-size:14px; color:#121212;">
+                        Order Sample
+                    </button>
+                </form>
+                @else
+                <a href="{{ route('login') }}"
+                   class="w-full flex items-center justify-center border transition-colors hover:bg-stone-50 mb-2"
+                   style="height:44px; border-color:rgba(18,18,18,0.25); border-radius:3px;
+                          font-family:'Lusitana',serif; font-size:14px; color:#121212; text-decoration:none;">
                     Order Sample
-                </button>
+                </a>
+                @endauth
+
+                {{-- Start Your Project CTA for fully custom --}}
+                <a href="{{ route('weave') }}"
+                   class="w-full flex items-center justify-center text-white transition-colors hover:opacity-90 mb-2"
+                   style="height:44px; border-radius:3px; background:#E8651A; font-family:'Lusitana',serif; font-size:14px; text-decoration:none;">
+                    Start Your Project
+                </a>
 
                 <div class="grid grid-cols-2 gap-2 mb-4">
-                    <button type="button"
+                    <button type="button" @click="showEmailModal = true"
                             class="flex items-center justify-center border transition-colors hover:bg-stone-50"
                             style="height:40px; border-color:rgba(18,18,18,0.25); border-radius:3px;
                                    font-family:'Lusitana',serif; font-size:13px; color:#121212;">
                         Email My Estimate
                     </button>
-                    <button type="button"
+                    <button type="button" @click="showSaveModal = true"
                             class="flex items-center justify-center border transition-colors hover:bg-stone-50"
                             style="height:40px; border-color:rgba(18,18,18,0.25); border-radius:3px;
                                    font-family:'Lusitana',serif; font-size:13px; color:#121212;">
@@ -523,7 +678,10 @@
     {{-- ── RELATED PRODUCTS ── --}}
     @if($related->count())
     <div class="max-w-[1200px] mx-auto px-6 pb-16">
-        <h2 style="font-family:'Lusitana',serif; font-size:22px; font-weight:700; color:#121212;" class="mb-6">You May Also Like</h2>
+        <div class="flex items-center justify-between mb-6">
+            <h2 style="font-family:'Lusitana',serif; font-size:22px; font-weight:700; color:#121212;">You May Also Like</h2>
+            <a href="{{ route('shop.index', ['category' => $product->category?->slug]) }}" style="font-size:13px; color:#121212; font-weight:500;" class="hover:opacity-70 transition-opacity">View All Similar Rugs →</a>
+        </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
             @foreach($related as $relProduct)
                 @include('partials.product-card', ['product' => $relProduct])
@@ -532,5 +690,238 @@
     </div>
     @endif
 
+    {{-- ══════════════════════════════════════════
+         MODALS
+      ══════════════════════════════════════════ --}}
+
+    {{-- Email Estimate Modal --}}
+    <div x-show="showEmailModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background:rgba(0,0,0,0.5);" @click.self="showEmailModal = false">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden" style="max-height:90vh; overflow-y:auto;">
+            <div class="flex items-center justify-between px-5 py-4 border-b" style="border-color:rgba(18,18,18,0.1);">
+                <h3 style="font-family:'Lusitana',serif; font-size:16px; font-weight:700; color:#121212;">Email My Estimate</h3>
+                <button @click="showEmailModal = false" class="text-stone-400 hover:text-stone-900">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form action="{{ route('estimate.email', $product) }}" method="POST" class="p-5 space-y-4">
+                @csrf
+                <input type="hidden" name="size" :value="selectedSize">
+                <input type="hidden" name="color" :value="selectedColor">
+                <input type="hidden" name="finish" :value="selectedFinish">
+                <input type="hidden" name="add_ons" :value="JSON.stringify(addOns)">
+                <input type="hidden" name="delivery_method" :value="delivery">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#121212; display:block; margin-bottom:6px;">Your Email</label>
+                    <input type="email" name="email" x-model="emailAddress" required
+                           class="w-full px-3 py-2 text-sm border focus:outline-none"
+                           style="border-color:rgba(18,18,18,0.2); border-radius:3px; color:#121212;"
+                           placeholder="you@example.com">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#121212; display:block; margin-bottom:6px;">Notes (optional)</label>
+                    <textarea name="notes" x-model="emailNotes" rows="3"
+                              class="w-full px-3 py-2 text-sm border focus:outline-none resize-none"
+                              style="border-color:rgba(18,18,18,0.2); border-radius:3px; color:#121212;"
+                              placeholder="Any special requests or questions..."></textarea>
+                </div>
+                <div style="background:#f8fafc; border-radius:3px; padding:12px;">
+                    <p style="font-size:12px; color:#64748b;">Estimated Total: <span style="font-weight:700; color:#121212;" x-text="'$' + estimateTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})"></span></p>
+                </div>
+                <button type="submit"
+                        class="w-full flex items-center justify-center text-white transition-colors hover:opacity-90"
+                        style="background:#E8651A; height:44px; border-radius:3px; font-size:14px; font-weight:500;">
+                    Send Estimate
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- Save Estimate Modal --}}
+    <div x-show="showSaveModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background:rgba(0,0,0,0.5);" @click.self="showSaveModal = false">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden" style="max-height:90vh; overflow-y:auto;">
+            <div class="flex items-center justify-between px-5 py-4 border-b" style="border-color:rgba(18,18,18,0.1);">
+                <h3 style="font-family:'Lusitana',serif; font-size:16px; font-weight:700; color:#121212;">Save My Estimate</h3>
+                <button @click="showSaveModal = false" class="text-stone-400 hover:text-stone-900">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            @auth
+            <form action="{{ route('estimate.save', $product) }}" method="POST" class="p-5 space-y-4">
+                @csrf
+                <input type="hidden" name="size" :value="selectedSize">
+                <input type="hidden" name="color" :value="selectedColor">
+                <input type="hidden" name="finish" :value="selectedFinish">
+                <input type="hidden" name="add_ons" :value="JSON.stringify(addOns)">
+                <input type="hidden" name="delivery_method" :value="delivery">
+                <input type="hidden" name="estimated_price" :value="estimateTotal">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#121212; display:block; margin-bottom:6px;">Notes (optional)</label>
+                    <textarea name="notes" x-model="saveNotes" rows="3"
+                              class="w-full px-3 py-2 text-sm border focus:outline-none resize-none"
+                              style="border-color:rgba(18,18,18,0.2); border-radius:3px; color:#121212;"
+                              placeholder="Add a personal note..."></textarea>
+                </div>
+                <div style="background:#f8fafc; border-radius:3px; padding:12px;">
+                    <p style="font-size:12px; color:#64748b;">This will be saved to your account dashboard.</p>
+                    <p style="font-size:12px; color:#64748b; margin-top:4px;">Estimated Total: <span style="font-weight:700; color:#121212;" x-text="'$' + estimateTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})"></span></p>
+                </div>
+                <button type="submit"
+                        class="w-full flex items-center justify-center text-white transition-colors hover:opacity-90"
+                        style="background:#121212; height:44px; border-radius:3px; font-size:14px; font-weight:500;">
+                    Save to My Account
+                </button>
+            </form>
+            @else
+            <div class="p-8 text-center">
+                <p style="font-size:14px; color:#64748b; margin-bottom:16px;">Please log in to save your estimate.</p>
+                <a href="{{ route('login') }}"
+                   class="inline-flex items-center justify-center text-white transition-colors hover:opacity-90 px-6"
+                   style="background:#E8651A; height:44px; border-radius:3px; font-size:14px; font-weight:500;">Log In</a>
+            </div>
+            @endauth
+        </div>
+    </div>
+
+    {{-- Room Visualization Modal --}}
+    <style>
+        @keyframes rugCubeSpin { from { transform: rotateX(-22deg) rotateY(0); } to { transform: rotateX(-22deg) rotateY(360deg); } }
+        @keyframes rugGlow { 0%,100% { opacity:.35; } 50% { opacity:.9; } }
+        .rug-loader-stage { perspective: 700px; }
+        .rug-cube { width:76px; height:76px; margin:0 auto; position:relative; transform-style:preserve-3d; animation: rugCubeSpin 2.6s linear infinite; }
+        .rug-cube > span { position:absolute; width:76px; height:76px; border:1px solid rgba(255,255,255,.3);
+            background:linear-gradient(135deg,#E8651A 0%,#b8430a 100%); box-shadow:inset 0 0 22px rgba(0,0,0,.25); }
+        .rc-front  { transform: translateZ(38px); }
+        .rc-back   { transform: rotateY(180deg) translateZ(38px); }
+        .rc-right  { transform: rotateY(90deg) translateZ(38px); }
+        .rc-left   { transform: rotateY(-90deg) translateZ(38px); }
+        .rc-top    { transform: rotateX(90deg) translateZ(38px); }
+        .rc-bottom { transform: rotateX(-90deg) translateZ(38px); }
+        .rug-shadow { width:90px; height:14px; margin:26px auto 0; border-radius:50%;
+            background:radial-gradient(ellipse,rgba(0,0,0,.28),transparent 70%); animation: rugGlow 2.6s ease-in-out infinite; }
+    </style>
+    <div x-show="showRoomModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background:rgba(0,0,0,0.5);" @click.self="showRoomModal = false; resetRoom()">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden" style="max-height:90vh; overflow-y:auto;">
+            <div class="flex items-center justify-between px-5 py-4 border-b" style="border-color:rgba(18,18,18,0.1);">
+                <h3 style="font-family:'Lusitana',serif; font-size:16px; font-weight:700; color:#121212;">See It In Your Room</h3>
+                <button @click="showRoomModal = false; resetRoom()" class="text-stone-400 hover:text-stone-900">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            {{-- 3D animated preloader --}}
+            <div x-show="roomGenerating" x-cloak class="px-6 py-12 text-center rug-loader-stage">
+                <div class="rug-cube">
+                    <span class="rc-front"></span><span class="rc-back"></span>
+                    <span class="rc-right"></span><span class="rc-left"></span>
+                    <span class="rc-top"></span><span class="rc-bottom"></span>
+                </div>
+                <div class="rug-shadow"></div>
+                <p class="mt-7" style="font-family:'Lusitana',serif; font-size:15px; font-weight:700; color:#121212;" x-text="roomStatus"></p>
+                <p style="font-size:12px; color:#64748b; margin-top:6px;">Creating your visualization — this can take up to a minute.</p>
+            </div>
+
+            {{-- Result --}}
+            <div x-show="roomResultUrl && !roomGenerating" x-cloak class="p-5 space-y-4">
+                <img :src="roomResultUrl" alt="Your room with the rug" class="w-full rounded-lg border" style="border-color:rgba(18,18,18,0.1);">
+                <div class="flex gap-2">
+                    <a :href="roomResultUrl" download="room-visualization.png"
+                       class="flex-1 flex items-center justify-center text-white hover:opacity-90"
+                       style="background:#121212; height:42px; border-radius:3px; font-size:13px; font-weight:500;">Download</a>
+                    <button @click="resetRoom()" type="button"
+                       class="flex-1 flex items-center justify-center hover:opacity-80"
+                       style="border:1px solid rgba(18,18,18,0.2); height:42px; border-radius:3px; font-size:13px; font-weight:500; color:#121212;">Try another photo</button>
+                </div>
+                <p style="font-size:12px; color:#64748b; text-align:center;">Credits remaining: <span x-text="roomCredits"></span></p>
+            </div>
+
+            {{-- Upload form (hidden while generating or showing a result) --}}
+            <div x-show="!roomGenerating && !roomResultUrl">
+            @auth
+            @if(Auth::user()->ai_credits > 0)
+            <form @submit.prevent="generateRoom" action="{{ route('room.visualize', $product) }}" method="POST" enctype="multipart/form-data" class="p-5 space-y-4">
+                @csrf
+                <div>
+                    <p style="font-size:13px; color:#64748b; line-height:1.6; margin-bottom:12px;">
+                        Upload a photo of your room and our AI will place the <strong>{{ $product->name }}</strong> rug into it.
+                    </p>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="px-2 py-1 rounded text-[10px] font-semibold" style="background:#dcfce7; color:#15803d;"><span x-text="roomCredits"></span> credits remaining</span>
+                    </div>
+                </div>
+                <div x-show="roomError" x-cloak class="px-3 py-2 rounded" style="background:#fef2f2; border:1px solid #fecaca;">
+                    <p style="font-size:12px; color:#b91c1c;" x-text="roomError"></p>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#121212; display:block; margin-bottom:6px;">Room Photo</label>
+                    <div class="relative">
+                        <input type="file" name="room_photo" accept="image/*" required
+                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                               onchange="document.getElementById('roomFilename').textContent = this.files[0]?.name || 'Choose file...';
+                                         if (this.files[0]) { document.getElementById('roomPreview').src = window.URL.createObjectURL(this.files[0]); document.getElementById('roomPreview').classList.remove('hidden'); }">
+                        <div class="border border-dashed border-stone-300 rounded-lg p-4 text-center hover:border-amber-400 transition-colors">
+                            <img id="roomPreview" class="hidden w-full max-h-48 object-cover rounded mb-2 mx-auto">
+                            <p id="roomFilename" style="font-size:13px; color:#64748b;">Click to upload room photo</p>
+                            <p style="font-size:11px; color:#9ca3af; margin-top:2px;">JPG, PNG up to 10MB</p>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" :disabled="roomGenerating"
+                        class="w-full flex items-center justify-center text-white transition-colors hover:opacity-90"
+                        style="background:#E8651A; height:44px; border-radius:3px; font-size:14px; font-weight:500;">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Generate Visualization
+                </button>
+            </form>
+            @else
+            <div class="p-8 text-center">
+                <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" style="background:#fef2f2;">
+                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <p style="font-size:14px; color:#121212; font-weight:600; margin-bottom:4px;">No credits left</p>
+                <p style="font-size:13px; color:#64748b; margin-bottom:16px;">You have used all 3 of your AI room visualization credits.</p>
+                <a href="{{ route('contact') }}" class="text-sm font-medium" style="color:#E8651A;">Contact us for more →</a>
+            </div>
+            @endif
+            @else
+            <div class="p-8 text-center">
+                <p style="font-size:14px; color:#64748b; margin-bottom:16px;">Please log in to use See It In Your Room. You will receive 3 free AI credits.</p>
+                <a href="{{ route('login') }}"
+                   class="inline-flex items-center justify-center text-white transition-colors hover:opacity-90 px-6"
+                   style="background:#E8651A; height:44px; border-radius:3px; font-size:14px; font-weight:500;">Log In</a>
+            </div>
+            @endauth
+            </div>{{-- /upload form wrapper --}}
+        </div>
+    </div>
+
 </div>{{-- /x-data --}}
+
+@push('scripts')
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "Product",
+    "name": "{{ $product->name }}",
+    "image": "{{ $product->primary_image_url }}",
+    "description": "{{ Str::limit(strip_tags($product->description ?? ''), 500) }}",
+    "brand": {
+        "@@type": "Brand",
+        "name": "Costikyan Custom Carpet"
+    },
+    "offers": {
+        "@@type": "Offer",
+        "url": "{{ route('shop.show', $product->slug) }}",
+        "priceCurrency": "USD",
+        "price": "{{ $product->sale_price ?? $product->price }}",
+        "availability": "{{ $product->stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder' }}",
+        "itemCondition": "https://schema.org/NewCondition"
+    },
+    "material": "{{ $product->material ?? 'Wool' }}",
+    "color": "{{ $product->colors->first()?->color_name ?? '' }}"
+}
+</script>
+@endpush
 @endsection

@@ -48,16 +48,13 @@ class DashboardController extends Controller
             ];
         });
 
-        // Top viewed collections (most ordered products)
-        $topProducts = Product::withCount('orderItems')
-            ->orderByDesc('order_items_count')
-            ->take(5)
-            ->get();
+        // The customer's most recent orders
+        $recentOrders = $user->orders()->latest()->take(5)->get();
 
         return view('dashboard.index', compact(
             'ordersCount', 'wishlistCount', 'totalSpent',
             'pendingOrders', 'completedOrders', 'activeCartItems',
-            'dailyData', 'monthlyData', 'topProducts'
+            'dailyData', 'monthlyData', 'recentOrders'
         ));
     }
 }

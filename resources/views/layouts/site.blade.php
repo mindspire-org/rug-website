@@ -6,7 +6,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Costikyan Custom Carpet') | Est. 1886</title>
     <meta name="description" content="@yield('meta_description', 'Costikyan Custom Carpet – handcrafted rugs made to your specifications since 1886.')">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', 'Costikyan Custom Carpet') | Est. 1886">
+    <meta property="og:description" content="@yield('meta_description', 'Costikyan Custom Carpet – handcrafted rugs made to your specifications since 1886.')">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_image', asset('images/cover.jpg'))">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'Costikyan Custom Carpet') | Est. 1886">
+    <meta name="twitter:description" content="@yield('meta_description', 'Costikyan Custom Carpet – handcrafted rugs made to your specifications since 1886.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/cover.jpg'))">
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/favicon.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lusitana:wght@400;700&display=swap" rel="stylesheet">
@@ -160,7 +171,7 @@
 @endif
 
 {{-- HEADER --}}
-<header class="sticky top-0 z-40 bg-[#111111] border-b border-white/10" x-data="{ cartCount: 0 }" x-init="fetch('/cart/count').then(r=>r.json()).then(d=> cartCount = d.count)">
+<header class="sticky top-0 z-40 bg-[#111111] border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-[54px] md:h-[60px]">
 
@@ -190,6 +201,20 @@
 
             {{-- Right icons --}}
             <div class="flex items-center gap-4">
+                {{-- Cart — minimal modern basket icon with count badge --}}
+                <a href="{{ route('cart.index') }}" class="relative text-white/80 hover:text-white transition-colors group" title="Cart">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.17 0 .318.114.362.278l2.755 9.978c.097.354.42.599.79.599h10.5a.75.75 0 0 0 .68-.43l2.46-5.538a.75.75 0 0 0-1.36-.604L16.697 8.25H4.268l-.577-2.09a.75.75 0 0 0-.722-.543H2.25z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM18.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    </svg>
+                    {{-- Count badge --}}
+                    <span id="header-cart-badge"
+                          class="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-white text-[10px] font-bold leading-none px-1"
+                          style="background: #E8651A; display: none;">
+                        0
+                    </span>
+                </a>
+
                 {{-- Search (visible on both) --}}
                 <button @click="searchOpen = !searchOpen" class="text-white/80 hover:text-white transition-colors">
                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
@@ -206,6 +231,7 @@
                         <a href="{{ route('dashboard') }}" class="block px-4 py-2.5 text-sm text-stone-300 hover:text-white hover:bg-stone-800">My Account</a>
                         <a href="{{ route('dashboard.orders') }}" class="block px-4 py-2.5 text-sm text-stone-300 hover:text-white hover:bg-stone-800">My Orders</a>
                         <a href="{{ route('wishlist.index') }}" class="block px-4 py-2.5 text-sm text-stone-300 hover:text-white hover:bg-stone-800">Wishlist</a>
+                        <a href="{{ route('room.visualizations') }}" class="block px-4 py-2.5 text-sm text-stone-300 hover:text-white hover:bg-stone-800">My Visualizations</a>
                         @if(Auth::user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm text-amber-400 hover:bg-stone-800">Admin Panel</a>
                         @endif
@@ -224,16 +250,10 @@
                 @endauth
 
                 {{-- Desktop wishlist --}}
-                @auth
-                <a href="{{ route('wishlist.index') }}" class="hidden md:block text-white/80 hover:text-white transition-colors">
+                <a href="{{ Auth::check() ? route('wishlist.index') : route('login') }}"
+                   class="hidden md:block text-white/80 hover:text-white transition-colors">
                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </a>
-                @endauth
-                @guest
-                <a href="{{ route('login') }}" class="hidden md:block text-white/80 hover:text-white transition-colors">
-                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                </a>
-                @endguest
             </div>
         </div>
     </div>
@@ -387,6 +407,24 @@
         <span style="font-size:10px; letter-spacing:0.02em;">Shop</span>
     </a>
 
+    {{-- Cart — minimal modern basket icon with count badge --}}
+    <a href="{{ route('cart.index') }}"
+       class="flex-1 flex flex-col items-center justify-center gap-1 transition-colors
+              {{ request()->routeIs('cart.*') ? 'text-amber-400' : 'text-stone-500 hover:text-stone-200' }}">
+        <div class="relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.17 0 .318.114.362.278l2.755 9.978c.097.354.42.599.79.599h10.5a.75.75 0 0 0 .68-.43l2.46-5.538a.75.75 0 0 0-1.36-.604L16.697 8.25H4.268l-.577-2.09a.75.75 0 0 0-.722-.543H2.25z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM18.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <span id="mobile-cart-badge"
+                  class="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] flex items-center justify-center rounded-full text-white text-[8px] font-bold leading-none px-0.5"
+                  style="background: #E8651A; display: none;">
+                0
+            </span>
+        </div>
+        <span style="font-size:10px; letter-spacing:0.02em;">Cart</span>
+    </a>
+
     {{-- Search (centre, larger pill) --}}
     <button @click="searchOpen = !searchOpen"
             class="flex-1 flex flex-col items-center justify-center gap-1 transition-colors
@@ -431,6 +469,94 @@
     </a>
     @endauth
 </nav>
+
+{{-- ══════════════════════════════════════════
+     MOBILE FLOATING CART BUTTON
+     Appears when cart has items, fixed bottom-right
+══════════════════════════════════════════ --}}
+<a href="{{ route('cart.index') }}"
+   id="cart-fab"
+   class="md:hidden fixed bottom-[80px] right-4 z-50 w-[52px] h-[52px] rounded-full items-center justify-center shadow-xl"
+   style="background: linear-gradient(135deg, #E8651A 0%, #EDB84A 100%); display: none;">
+    <div class="relative">
+        <svg class="w-[22px] h-[22px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.17 0 .318.114.362.278l2.755 9.978c.097.354.42.599.79.599h10.5a.75.75 0 0 0 .68-.43l2.46-5.538a.75.75 0 0 0-1.36-.604L16.697 8.25H4.268l-.577-2.09a.75.75 0 0 0-.722-.543H2.25z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM18.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+        </svg>
+        <span id="fab-cart-badge"
+              class="absolute -top-2.5 -right-2.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-white text-stone-900 text-[10px] font-bold leading-none px-1"
+              style="display: none;">
+            0
+        </span>
+    </div>
+</a>
+
+<script>
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.wishlist-toggle');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (btn.dataset.authenticated !== 'true') {
+        window.location.href = '/login';
+        return;
+    }
+    const productId = btn.dataset.productId;
+    const isIn = btn.dataset.inWishlist === 'true';
+    const svg = btn.querySelector('svg');
+    fetch('/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ product_id: productId })
+    }).then(r => {
+        if (r.ok) {
+            const newState = !isIn;
+            btn.dataset.inWishlist = newState ? 'true' : 'false';
+            if (newState) {
+                btn.classList.remove('text-white/80', 'text-stone-400');
+                btn.classList.add('text-red-500');
+                if (svg) { svg.setAttribute('fill', 'currentColor'); svg.setAttribute('stroke', 'none'); }
+            } else {
+                btn.classList.remove('text-red-500');
+                if (btn.closest('.product-card')) {
+                    btn.classList.add('text-white/80');
+                } else {
+                    btn.classList.add('text-stone-400');
+                }
+                if (svg) { svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor'); }
+            }
+        }
+    }).catch(() => {});
+});
+</script>
+
+<script>
+(function() {
+    function updateCartBadges(count) {
+        const show = count > 0;
+        const display = show ? 'flex' : 'none';
+        const els = {
+            header: document.getElementById('header-cart-badge'),
+            mobile: document.getElementById('mobile-cart-badge'),
+            fab:    document.getElementById('cart-fab'),
+            fabBadge: document.getElementById('fab-cart-badge'),
+        };
+        if (els.header) { els.header.textContent = count; els.header.style.display = display; }
+        if (els.mobile) { els.mobile.textContent = count; els.mobile.style.display = display; }
+        if (els.fabBadge) { els.fabBadge.textContent = count; els.fabBadge.style.display = display; }
+        if (els.fab) { els.fab.style.display = display; }
+    }
+
+    fetch('/cart/count', { headers: { 'Accept': 'application/json' } })
+        .then(r => r.ok ? r.json() : { count: 0 })
+        .then(d => updateCartBadges(d.count || 0))
+        .catch(() => {});
+})();
+</script>
 
 @stack('scripts')
 @livewireScripts
