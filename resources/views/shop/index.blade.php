@@ -55,7 +55,7 @@
                             class="appearance-none w-full bg-white focus:outline-none cursor-pointer pl-[14px] pr-8"
                             style="border:1px solid rgba(18,18,18,0.15); border-radius:4px; height:40px;
                                    font-family:'Lusitana',serif; font-size:15px; color:#121212;">
-                        <option value="featured"   {{ request('sort','featured')==='featured'  ?'selected':'' }}>Sort by Price</option>
+                        <option value="featured"   {{ request('sort','featured')==='featured'  ?'selected':'' }}>Sort by</option>
                         <option value="price_asc"  {{ request('sort')==='price_asc'            ?'selected':'' }}>Price: Low to High</option>
                         <option value="price_desc" {{ request('sort')==='price_desc'           ?'selected':'' }}>Price: High to Low</option>
                         <option value="newest"     {{ request('sort')==='newest'               ?'selected':'' }}>Newest</option>
@@ -321,6 +321,17 @@
                     </div>
 
                 </form>
+
+                {{-- Auto-apply filters on checkbox change (#1) --}}
+                <script>
+                (function () {
+                    var ff = document.getElementById('filter-form');
+                    if (!ff) return;
+                    ff.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
+                        cb.addEventListener('change', function () { ff.submit(); });
+                    });
+                })();
+                </script>
             </div>
         </aside>
 

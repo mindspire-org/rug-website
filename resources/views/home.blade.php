@@ -107,33 +107,7 @@
 </section>
 
 {{-- ══════════════════════════════════════════════════════════════
-     3. WEAVE YOUR DREAM RUG — full-bleed dark photo section
-══════════════════════════════════════════════════════════════ --}}
-<section class="relative h-[55vh] min-h-[420px] flex items-center justify-center overflow-hidden">
-    {{-- Background: Frame 427319720 photo --}}
-    <div class="absolute inset-0">
-        <img src="{{ asset('images/frame 427319720.png') }}" alt="Weave Your Dream Rug"
-             class="w-full h-full object-cover object-center">
-        <div class="absolute inset-0" style="background:rgba(18,18,18,0.52);"></div>
-    </div>
-
-    <div class="relative z-10 text-center px-6 max-w-xl">
-        <h2 class="font-serif text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
-            Weave Your Dream Rug<br>From Scratch
-        </h2>
-        <p class="text-stone-300 text-sm md:text-base mb-8 max-w-md mx-auto">
-            Start with a blank canvas and collaborate with our team to design a rug made entirely for your space.
-        </p>
-        <a href="{{ route('weave') }}"
-           class="inline-flex items-center gap-2 border border-white text-white hover:bg-white hover:text-stone-900 text-sm font-medium px-8 py-3 transition-colors duration-200">
-            Design Rug from Scratch
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </a>
-    </div>
-</section>
-
-{{-- ══════════════════════════════════════════════════════════════
-     4. CRAFTED AROUND YOU — white bg, heading + 3 cards
+     3. CRAFTED AROUND YOU — white bg, heading + 3 cards (swapped up)
 ══════════════════════════════════════════════════════════════ --}}
 <section class="py-20 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -157,9 +131,11 @@
             {{-- Card 1: Truly Yours — CARD 11 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
                 <img src="{{ asset('images/card 11.png') }}" alt="Truly Yours"
-                     class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                     class="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-110 group-hover:opacity-0">
+                <img src="{{ asset('images/Frame 13.png') }}" alt="Truly Yours"
+                     class="absolute inset-0 w-full h-full object-cover object-center opacity-0 scale-110 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-100">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-all duration-500 group-hover:from-black/85"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-6 text-white transition-transform duration-500 group-hover:-translate-y-1">
                     <h3 class="font-serif text-xl font-bold mb-2">Truly Yours</h3>
                     <p class="text-sm text-stone-300 leading-relaxed">Begin with a design from our collection or reimagine it for your space. Custom dimensions and nuanced color variations allow each rug to feel entirely personal — executed with precision and delivered with ease.</p>
                 </div>
@@ -168,9 +144,11 @@
             {{-- Card 2: Generational Craftsmanship — CARD 10 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
                 <img src="{{ asset('images/card 10.png') }}" alt="Generational Craftsmanship"
-                     class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                     class="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-110 group-hover:opacity-0">
+                <img src="{{ asset('images/Frame 14.png') }}" alt="Generational Craftsmanship"
+                     class="absolute inset-0 w-full h-full object-cover object-center opacity-0 scale-110 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-100">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-all duration-500 group-hover:from-black/85"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-6 text-white transition-transform duration-500 group-hover:-translate-y-1">
                     <h3 class="font-serif text-xl font-bold mb-2">Generational Craftsmanship</h3>
                     <p class="text-sm text-stone-300 leading-relaxed">Hand-knotted, hand-tufted, and machine-loomed by carefully curated weavers, our rugs reflect generations of craftsmanship and trusted artisan relationships built over 140 years.</p>
                 </div>
@@ -179,9 +157,11 @@
             {{-- Card 3: Finishing Care — CARD 9 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
                 <img src="{{ asset('images/card 9.png') }}" alt="Finishing Care"
-                     class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                     class="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-110 group-hover:opacity-0">
+                <img src="{{ asset('images/Frame 15.png') }}" alt="Finishing Care"
+                     class="absolute inset-0 w-full h-full object-cover object-center opacity-0 scale-110 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-100">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-all duration-500 group-hover:from-black/85"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-6 text-white transition-transform duration-500 group-hover:-translate-y-1">
                     <h3 class="font-serif text-xl font-bold mb-2">Finishing Care</h3>
                     <p class="text-sm text-stone-300 leading-relaxed">Handled with exceptional care through white-glove delivery and in-home placement, our experienced teams carefully position each rug to ensure effortless installation and refined presentation.</p>
                 </div>
@@ -191,4 +171,48 @@
     </div>
 </section>
 
+{{-- ══════════════════════════════════════════════════════════════
+     4. WEAVE YOUR DREAM RUG — full-bleed dark photo section (swapped down)
+══════════════════════════════════════════════════════════════ --}}
+<section class="relative h-[55vh] min-h-[420px] flex items-center justify-center overflow-hidden">
+    {{-- Background: Frame 427319720 photo --}}
+    <div class="absolute inset-0">
+        <img src="{{ asset('images/frame 427319720.png') }}" alt="Weave Your Dream Rug"
+             class="w-full h-full object-cover object-center">
+        <div class="absolute inset-0" style="background:rgba(18,18,18,0.52);"></div>
+    </div>
+
+    <div class="relative z-10 text-center px-6 max-w-xl">
+        <h2 class="font-serif text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+            Weave Your Dream Rug<br>From Scratch
+        </h2>
+        <p class="text-stone-300 text-sm md:text-base mb-8 max-w-md mx-auto">
+            Start with a blank canvas and collaborate with our team to design a rug made entirely for your space.
+        </p>
+        <a href="{{ route('weave') }}"
+           class="inline-flex items-center gap-2 border border-white text-white hover:bg-white hover:text-stone-900 text-sm font-medium px-8 py-3 transition-colors duration-200">
+            Design Rug from Scratch
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+    </div>
+</section>
 @endsection
+
+@push('scripts')
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "Organization",
+    "name": "Costikyan Custom Carpet",
+    "url": "{{ url('/') }}",
+    "logo": "{{ asset('images/cover.jpg') }}",
+    "description": "Handcrafted custom rugs made to your specifications since 1886.",
+    "sameAs": [],
+    "contactPoint": {
+        "@@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": "English"
+    }
+}
+</script>
+@endpush

@@ -216,14 +216,14 @@
                 </a>
 
                 {{-- Search (visible on both) --}}
-                <button @click="searchOpen = !searchOpen" class="text-white/80 hover:text-white transition-colors">
+                <button @click="searchOpen = !searchOpen" class="text-white/80 hover:text-white transition-colors" title="Search">
                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
                 </button>
 
                 {{-- Desktop-only account dropdown --}}
                 @auth
                 <div class="relative group hidden md:block">
-                    <button class="text-white/80 hover:text-white transition-colors">
+                    <button class="text-white/80 hover:text-white transition-colors" title="Account">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
                     </button>
                     <div class="absolute top-full right-0 mt-2 w-48 bg-stone-900 border border-stone-700 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -251,6 +251,7 @@
 
                 {{-- Desktop wishlist --}}
                 <a href="{{ Auth::check() ? route('wishlist.index') : route('login') }}"
+                   title="Wishlist"
                    class="hidden md:block text-white/80 hover:text-white transition-colors">
                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </a>
@@ -336,8 +337,8 @@
                 <div class="w-full h-px bg-stone-700 mb-5"></div>
                 <ul class="space-y-3">
                     <li><a href="{{ route('contact') }}" class="text-[13px] text-stone-400 hover:text-white transition-colors">Contact</a></li>
-                    <li><a href="#" class="text-[13px] text-stone-400 hover:text-white transition-colors">Delivery &amp; Lead Times</a></li>
-                    <li><a href="#" class="text-[13px] text-stone-400 hover:text-white transition-colors">Care &amp; Maintenance</a></li>
+                    <li><a href="{{ route('about') }}" class="text-[13px] text-stone-400 hover:text-white transition-colors">Delivery &amp; Lead Times</a></li>
+                    <li><a href="https://www.costikyan.com/" target="_blank" rel="noopener" class="text-[13px] text-stone-400 hover:text-white transition-colors">Care &amp; Maintenance</a></li>
                 </ul>
             </div>
 
@@ -346,7 +347,7 @@
                 <h4 class="text-white text-[15px] font-medium mb-2">Services</h4>
                 <div class="w-full h-px bg-stone-700 mb-5"></div>
                 <ul class="space-y-3">
-                    <li><a href="{{ route('services') }}" class="text-[13px] text-stone-400 hover:text-white transition-colors">Visit Our Services Site</a></li>
+                    <li><a href="https://www.costikyan.com/" target="_blank" rel="noopener" class="text-[13px] text-stone-400 hover:text-white transition-colors">Visit Our Services Site</a></li>
                 </ul>
             </div>
 

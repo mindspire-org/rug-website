@@ -28,9 +28,9 @@
     // Rug finish options (Custom Size only)
     $rugFinishes = [
         ['name' => 'Machine Narrow Binding', 'desc' => 'A machine-applied fabric binding for a consistent and clean finishing edge.', 'img' => null],
-        ['name' => 'Machine Surge',          'desc' => 'A straight stitch with a continuous series of interlocked stitches for a durable and consistent finish.', 'img' => null],
+        ['name' => 'Machine Serge',          'desc' => 'A straight stitch with a continuous series of interlocked stitches for a durable and consistent finish.', 'img' => null],
         ['name' => 'Custom Wide Bind',       'desc' => 'A wide fabric binding customized to your needs for a bold, decorative edge.', 'img' => null],
-        ['name' => 'Hand Surge',             'desc' => 'The rug edge is finished by hand with a fabric binding for a tailored look.', 'img' => null],
+        ['name' => 'Hand Serge',             'desc' => 'The rug edge is finished by hand with a fabric binding for a tailored look.', 'img' => null],
     ];
 @endphp
 
@@ -55,7 +55,7 @@
     selectedColor: '{{ $product->colors->first()?->color_name ?? '' }}',
     selectedFinish: 'Machine Narrow Binding',
     qty: 1,
-    addOns: { protector: true, padding: true, spot: true },
+    addOns: { protector: false, padding: false, spot: false },
     delivery: 'whiteglove',
     showZip: false,
     zip: '',
@@ -198,9 +198,17 @@
 
                 {{-- Short description --}}
                 @if($product->description)
-                <p style="font-size:13px; color:rgba(18,18,18,0.75); line-height:1.6; max-width:420px;" class="mb-6">
-                    {{ Str::limit($product->description, 180) }}
-                </p>
+                <div x-data="{ descOpen: false }" class="mb-6" style="max-width:420px;">
+                    <p style="font-size:13px; color:rgba(18,18,18,0.75); line-height:1.6;">
+                        <span x-show="!descOpen">{{ Str::limit($product->description, 180) }}</span>
+                        <span x-show="descOpen" x-cloak>{{ $product->description }}</span>
+                    </p>
+                    @if(Str::length($product->description) > 180)
+                    <button @click="descOpen = !descOpen" type="button"
+                            class="mt-1.5" style="font-size:13px; font-weight:600; color:#E8651A; background:none; border:none; cursor:pointer; padding:0;"
+                            x-text="descOpen ? 'Read less' : 'Read more'"></button>
+                    @endif
+                </div>
                 @endif
 
                 {{-- ── IMAGE CAROUSEL ── --}}
@@ -521,9 +529,8 @@
                         {{-- White Glove --}}
                         <div class="border" style="border-color:rgba(18,18,18,0.15); border-radius:3px; padding:12px;">
                             <div class="flex items-start gap-3">
-                                <input type="checkbox" :checked="delivery === 'whiteglove'"
-                                       @change="delivery = 'whiteglove'"
-                                       class="mt-0.5 w-4 h-4 cursor-pointer flex-shrink-0" style="accent-color:#121212;" checked>
+                                <input type="radio" name="delivery_method" value="whiteglove" x-model="delivery"
+                                       class="mt-0.5 w-4 h-4 cursor-pointer flex-shrink-0" style="accent-color:#121212;">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
                                         <p style="font-size:12px; font-weight:600; color:#121212; text-transform:uppercase; letter-spacing:0.06em;">White-Glove Delivery & Spread</p>
@@ -545,7 +552,7 @@
                         {{-- Standard UPS --}}
                         <div class="border" style="border-color:rgba(18,18,18,0.15); border-radius:3px; padding:12px;">
                             <div class="flex items-start gap-3">
-                                <input type="checkbox" class="mt-0.5 w-4 h-4 cursor-pointer flex-shrink-0" style="accent-color:#121212;">
+                                <input type="radio" name="delivery_method" value="ups" x-model="delivery" class="mt-0.5 w-4 h-4 cursor-pointer flex-shrink-0" style="accent-color:#121212;">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between mb-1">
                                         <p style="font-size:12px; font-weight:600; color:#121212; text-transform:uppercase; letter-spacing:0.06em;">Standard UPS Shipping</p>
@@ -566,7 +573,7 @@
                         {{-- Warehouse Pick-up --}}
                         <div class="border" style="border-color:rgba(18,18,18,0.15); border-radius:3px; padding:12px;">
                             <div class="flex items-center gap-3">
-                                <input type="checkbox" class="w-4 h-4 cursor-pointer flex-shrink-0" style="accent-color:#121212;">
+                                <input type="radio" name="delivery_method" value="pickup" x-model="delivery" class="w-4 h-4 cursor-pointer flex-shrink-0" style="accent-color:#121212;">
                                 <div class="flex items-center justify-between flex-1">
                                     <p style="font-size:12px; font-weight:600; color:#121212; text-transform:uppercase; letter-spacing:0.06em;">Warehouse Pick-up</p>
                                     <span style="font-size:12px; font-weight:600; color:#121212;">+$50</span>
@@ -637,13 +644,6 @@
                     Order Sample
                 </a>
                 @endauth
-
-                {{-- Start Your Project CTA for fully custom --}}
-                <a href="{{ route('weave') }}"
-                   class="w-full flex items-center justify-center text-white transition-colors hover:opacity-90 mb-2"
-                   style="height:44px; border-radius:3px; background:#E8651A; font-family:'Lusitana',serif; font-size:14px; text-decoration:none;">
-                    Start Your Project
-                </a>
 
                 <div class="grid grid-cols-2 gap-2 mb-4">
                     <button type="button" @click="showEmailModal = true"

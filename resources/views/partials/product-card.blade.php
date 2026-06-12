@@ -3,15 +3,28 @@
     $isPlaceholder = str_contains($imgUrl, 'placeholder');
     $c1            = $product->colors->first()?->color_hex ?? '#d4c5b0';
     $c2            = $product->colors->last()?->color_hex  ?? '#a08060';
+    $isFav         = auth()->check() && auth()->user()->wishlist->contains('product_id', $product->id);
 
-    if ($product->is_new_arrival)    $badgeLabel = 'New Arrivals';
-    elseif ($product->is_bestseller) $badgeLabel = 'In Stock';
-    elseif ($product->sale_price)    $badgeLabel = 'Sale';
-    else                             $badgeLabel = 'Custom Size';
+    $catSlug = $product->category->slug ?? '';
+    if ($catSlug === 'custom-size')       $badgeLabel = 'Custom Size';
+    elseif ($catSlug === 'made-on-order') $badgeLabel = 'Made to Order';
+    elseif ($product->is_new_arrival)     $badgeLabel = 'New Arrivals';
+    elseif ($product->sale_price)         $badgeLabel = 'Sale';
+    else                                  $badgeLabel = 'In Stock';
+
+    // Secondary image for hover swap (#18)
+    $secondImg = ($product->relationLoaded('images') ? $product->images->count() > 1 : $product->images()->count() > 1)
+        ? route('media.show', ['path' => $product->images->get(1)->path])
+        : null;
+
+    // Price of the smallest available size (e.g. 9x9), else base price (#14)
+    $cardPrice = $product->dimensionPrices->count()
+        ? $product->dimensionPrices->sortBy(fn($d) => (float) $d->width * (float) $d->length)->first()->effective_price
+        : ($product->sale_price ?? $product->price);
 @endphp
 
 {{-- Card: gap 10px between image and meta ── --}}
-<div class="group flex flex-col gap-[10px]">
+<div class="group flex flex-col gap-[10px] product-card">
 
     {{-- ── IMAGE: border-radius 4px, shadow, aspect 3:4 ── --}}
     <a href="{{ route('shop.show', $product->slug) }}"
@@ -31,15 +44,20 @@
         </div>
         @else
         <img src="{{ $imgUrl }}" alt="{{ $product->name }}"
-             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+             class="w-full h-full object-cover transition-all duration-700 {{ $secondImg ? 'group-hover:opacity-0' : 'group-hover:scale-105' }}"
              loading="lazy">
+        @if($secondImg)
+        <img src="{{ $secondImg }}" alt="{{ $product->name }}"
+             class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+             loading="lazy">
+        @endif
         @endif
 
         {{-- Gradient overlay: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%) ── --}}
         <div class="absolute inset-0 pointer-events-none"
              style="background:linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%)"></div>
 
-        {{-- Tags row: badge left + heart right, padding 14px ── --}}
+        {{-- Tags row: badge left, heart right, padding 14px ── --}}
         <div class="absolute top-[14px] left-[14px] right-[14px] flex items-center justify-between">
 
             {{-- Pill badge: rgba(255,255,255,0.1) bg, 1px white border, backdrop-blur(5px), border-radius 37px ── --}}
@@ -50,32 +68,16 @@
                 {{ $badgeLabel }}
             </span>
 
-            {{-- Heart: backdrop-blur(4px), border-radius 37px, 28×28 ── --}}
-            @auth
-            <form action="{{ route('wishlist.toggle') }}" method="POST" class="flex-shrink-0">
-                @csrf
-                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                <button type="submit"
-                        class="flex items-center justify-center"
-                        style="width:28px;height:28px; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
-                               border-radius:37px;">
-                    <svg width="23" height="20" fill="none" stroke="#FFFFFF" stroke-width="1" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                </button>
-            </form>
-            @else
-            <a href="{{ route('login') }}"
-               class="flex items-center justify-center flex-shrink-0"
-               style="width:28px;height:28px; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
-                      border-radius:37px;">
-                <svg width="23" height="20" fill="none" stroke="#FFFFFF" stroke-width="1" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            {{-- Heart / Wishlist toggle ── --}}
+            <button class="wishlist-toggle transition-colors {{ $isFav ? 'text-red-500' : 'text-white/80 hover:text-white' }}"
+                    data-product-id="{{ $product->id }}"
+                    data-in-wishlist="{{ $isFav ? 'true' : 'false' }}"
+                    data-authenticated="{{ auth()->check() ? 'true' : 'false' }}"
+                    style="background:none; border:none; cursor:pointer; padding:4px;">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" {!! $isFav ? 'fill="currentColor" stroke="none"' : 'fill="none" stroke="currentColor"' !!} stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
-            </a>
-            @endauth
+            </button>
         </div>
 
     </a>
@@ -92,7 +94,7 @@
             </p>
             <span style="font-family:'Lusitana',serif; font-size:18px; line-height:26px; font-weight:400;
                          color:#171717; white-space:nowrap; flex-shrink:0;">
-                From ${{ number_format($product->sale_price ?? $product->price, 0) }}
+                ${{ number_format($cardPrice, 0) }}
             </span>
         </div>
 

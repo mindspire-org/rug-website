@@ -11,7 +11,7 @@ class ShopController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::active()->with(['primaryImage', 'colors', 'category']);
+        $query = Product::active()->with(['primaryImage', 'images', 'dimensionPrices', 'colors', 'category', 'filterValues.attribute']);
 
         // ── Tab filter ──────────────────────────────────────────
         $tab = $request->get('tab', 'all');
@@ -36,14 +36,64 @@ class ShopController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        // ── Material (multi-select array) ────────────────────────
-        if ($request->filled('material')) {
-            $query->whereIn('material', (array) $request->material);
+        // ── Color (via product_colors.color_name) ────────────────
+        if ($request->filled('color')) {
+            $colors = (array) $request->color;
+            $query->whereHas('colors', function ($q) use ($colors) {
+                $q->whereIn('color_name', $colors);
+            });
         }
 
-        // ── Style / Pattern ──────────────────────────────────────
+        // ── Material (via product_filter_values OR direct column) ──
+        if ($request->filled('material')) {
+            $materials = (array) $request->material;
+            $query->where(function ($q) use ($materials) {
+                // Try direct column first
+                $q->whereIn('material', $materials);
+                // Also try filter values
+                $q->orWhereHas('filterValues', function ($sq) use ($materials) {
+                    $sq->whereIn('value', $materials)
+                        ->orWhereIn('display_value', $materials);
+                });
+            });
+        }
+
+        // ── Pattern / Style (via product_filter_values OR direct column) ──
         if ($request->filled('pattern')) {
-            $query->whereIn('style', (array) $request->pattern);
+            $patterns = (array) $request->pattern;
+            $query->where(function ($q) use ($patterns) {
+                $q->whereIn('style', $patterns)
+                  ->orWhereHas('filterValues', function ($sq) use ($patterns) {
+                      $sq->whereIn('value', $patterns)
+                          ->orWhereIn('display_value', $patterns);
+                  });
+            });
+        }
+
+        // ── Construction (via product_filter_values) ─────────────
+        if ($request->filled('construction')) {
+            $constructions = (array) $request->construction;
+            $query->whereHas('filterValues', function ($q) use ($constructions) {
+                $q->whereIn('value', $constructions)
+                  ->orWhereIn('display_value', $constructions);
+            });
+        }
+
+        // ── Room (via product_filter_values) ───────────────────
+        if ($request->filled('room')) {
+            $rooms = (array) $request->room;
+            $query->whereHas('filterValues', function ($q) use ($rooms) {
+                $q->whereIn('value', $rooms)
+                  ->orWhereIn('display_value', $rooms);
+            });
+        }
+
+        // ── Size (via product_dimension_prices) ─────────────────
+        if ($request->filled('size')) {
+            $sizes = (array) $request->size;
+            $query->whereHas('dimensionPrices', function ($q) use ($sizes) {
+                $q->whereIn('label', $sizes);
+            });
         }
 
         // ── Availability (maps to product flags) ─────────────────
@@ -58,10 +108,11 @@ class ShopController extends Controller
 
         // ── Search ───────────────────────────────────────────────
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%')
-                  ->orWhere('material', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%')
+                  ->orWhere('material', 'like', '%' . $search . '%');
             });
         }
 
