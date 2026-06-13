@@ -176,15 +176,8 @@
         <div class="flex items-center justify-between h-[54px] md:h-[60px]">
 
             {{-- Logo --}}
-            <a href="{{ route('home') }}" class="flex-shrink-0 flex flex-col">
-                <div class="flex items-stretch border border-white/20">
-                    <div class="w-[5px] bg-orange-600 flex-shrink-0"></div>
-                    <div class="px-2.5 py-[5px] flex items-center gap-0.5">
-                        <span class="font-serif font-bold text-white text-[14px] md:text-[15px] tracking-[0.18em] leading-none">COSTI<span class="text-orange-500">K</span>YAN</span>
-                        <sup class="text-white/50 text-[7px] leading-none mt-[-4px]">™</sup>
-                    </div>
-                </div>
-                <span class="text-[9px] text-stone-500 tracking-[0.2em] uppercase mt-[3px] pl-[6px]">Since 1886</span>
+            <a href="{{ route('home') }}" class="flex-shrink-0">
+                <img src="{{ asset('costikyan-logo.png') }}" alt="Costikyan Custom Carpet — Since 1886" class="h-11 md:h-12 w-auto">
             </a>
 
             {{-- Desktop Nav --}}
@@ -282,15 +275,9 @@
 
             {{-- ── COL 1: Logo + Social + Contact ── --}}
             <div class="col-span-2 md:col-span-1">
-                {{-- Large logo box --}}
+                {{-- Large logo --}}
                 <a href="{{ route('home') }}" class="inline-block mb-7">
-                    <div class="flex items-stretch border border-white/15 bg-[#232323]" style="min-width:200px">
-                        <div class="w-[7px] bg-orange-600 flex-shrink-0"></div>
-                        <div class="px-4 py-3 flex items-center gap-1">
-                            <span class="font-serif font-bold text-white text-[22px] tracking-[0.18em] leading-none">COSTI<span class="text-orange-500">K</span>YAN</span>
-                            <sup class="text-white/40 text-[9px] leading-none" style="margin-top:-6px">™</sup>
-                        </div>
-                    </div>
+                    <img src="{{ asset('costikyan-logo.png') }}" alt="Costikyan Custom Carpet" class="h-16 w-auto">
                 </a>
 
                 {{-- Connect With Us --}}

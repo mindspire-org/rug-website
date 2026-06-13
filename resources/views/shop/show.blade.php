@@ -5,14 +5,18 @@
 @section('og_image', $product->primary_image_url)
 
 @php
-    // Determine product type for conditional sections
-    $isInStock     = $product->stock > 0 && !$product->is_new_arrival;
-    $isCustomSize  = $product->featured && !$product->is_bestseller && !$product->is_new_arrival;
-    $isMadeToOrder = $product->is_new_arrival || ($product->stock == 0 && !$product->featured);
+    // Determine product type for conditional sections — driven by the product's
+    // category first (in-stock / custom-size / made-on-order), with heuristic fallback.
+    $catSlug = $product->category->slug ?? '';
+    $isCustomSize  = $catSlug === 'custom-size';
+    $isMadeToOrder = $catSlug === 'made-on-order';
+    $isInStock     = $catSlug === 'in-stock';
 
-    // Normalize: if none matched, fall back to is_bestseller = in stock
     if (!$isInStock && !$isCustomSize && !$isMadeToOrder) {
-        $isInStock = true;
+        // Fallback heuristic for products without one of the three core categories
+        $isCustomSize  = $product->featured && !$product->is_bestseller && !$product->is_new_arrival;
+        $isMadeToOrder = $product->is_new_arrival || ($product->stock == 0 && !$product->featured);
+        $isInStock     = !$isCustomSize && !$isMadeToOrder;
     }
 
     // Badge label
@@ -27,10 +31,10 @@
 
     // Rug finish options (Custom Size only)
     $rugFinishes = [
-        ['name' => 'Machine Narrow Binding', 'desc' => 'A machine-applied fabric binding for a consistent and clean finishing edge.', 'img' => null],
-        ['name' => 'Machine Serge',          'desc' => 'A straight stitch with a continuous series of interlocked stitches for a durable and consistent finish.', 'img' => null],
-        ['name' => 'Custom Wide Bind',       'desc' => 'A wide fabric binding customized to your needs for a bold, decorative edge.', 'img' => null],
-        ['name' => 'Hand Serge',             'desc' => 'The rug edge is finished by hand with a fabric binding for a tailored look.', 'img' => null],
+        ['name' => 'Machine Narrow Binding', 'desc' => 'A machine-applied fabric binding for a consistent and clean finishing edge.', 'img' => 'images/Frame 50.png'],
+        ['name' => 'Machine Serge',          'desc' => 'A straight stitch with a continuous series of interlocked stitches for a durable and consistent finish.', 'img' => 'images/Frame 51.png'],
+        ['name' => 'Custom Wide Bind',       'desc' => 'A wide fabric binding customized to your needs for a bold, decorative edge.', 'img' => 'images/Frame 53.png'],
+        ['name' => 'Hand Serge',             'desc' => 'The rug edge is finished by hand with a fabric binding for a tailored look.', 'img' => 'images/Frame 54.png'],
     ];
 @endphp
 
@@ -429,12 +433,16 @@
                         @foreach($rugFinishes as $finish)
                         <button @click="selectedFinish = '{{ $finish['name'] }}'"
                                 :class="selectedFinish === '{{ $finish['name'] }}' ? 'ring-2 ring-[#121212]' : 'ring-1 ring-[rgba(18,18,18,0.15)]'"
-                                class="text-left p-2.5 bg-white transition-all"
+                                class="text-left p-2.5 bg-white transition-all flex flex-col"
                                 style="border-radius:3px;">
-                            {{-- Placeholder image area --}}
-                            <div class="w-full mb-2 bg-stone-100" style="height:70px; border-radius:2px;"></div>
-                            <p style="font-size:11px; font-weight:600; color:#121212; line-height:1.3;" class="mb-1">{{ $finish['name'] }}</p>
-                            <p style="font-size:10px; color:rgba(18,18,18,0.55); line-height:1.4;">{{ $finish['desc'] }}</p>
+                            <p style="font-size:11px; font-weight:600; color:#121212; line-height:1.3; text-transform:uppercase; letter-spacing:0.04em;" class="mb-1">{{ $finish['name'] }}</p>
+                            <p style="font-size:10px; color:rgba(18,18,18,0.55); line-height:1.4;" class="mb-2 flex-1">{{ $finish['desc'] }}</p>
+                            @if(!empty($finish['img']))
+                            <img src="{{ asset($finish['img']) }}" alt="{{ $finish['name'] }}" loading="lazy"
+                                 class="w-full object-cover" style="height:70px; border-radius:2px;">
+                            @else
+                            <div class="w-full bg-stone-100" style="height:70px; border-radius:2px;"></div>
+                            @endif
                         </button>
                         @endforeach
                     </div>

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\FilterController as AdminFilterController;
+use App\Http\Controllers\Admin\ZipPriceController as AdminZipPriceController;
 use App\Http\Controllers\Admin\TradeAccountController;
 use App\Http\Controllers\Admin\SubmissionController;
 use App\Http\Controllers\Admin\ProductImportController;
@@ -132,6 +133,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:sanctum', config('jets
     Route::resource('coupons', AdminCouponController::class);
     Route::get('/filters', [AdminFilterController::class, 'index'])->name('filters.index');
     Route::put('/filters', [AdminFilterController::class, 'update'])->name('filters.update');
+
+    // ZIP-code shipping price ranges
+    Route::get('/zip-prices', [AdminZipPriceController::class, 'index'])->name('zip-prices.index');
+    Route::post('/zip-prices', [AdminZipPriceController::class, 'store'])->name('zip-prices.store');
+    Route::put('/zip-prices/{zipPrice}', [AdminZipPriceController::class, 'update'])->name('zip-prices.update');
+    Route::delete('/zip-prices/{zipPrice}', [AdminZipPriceController::class, 'destroy'])->name('zip-prices.destroy');
 
     // Trade Accounts
     Route::get('/trade-accounts', [TradeAccountController::class, 'index'])->name('trade-accounts.index');
