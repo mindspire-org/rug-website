@@ -177,7 +177,7 @@
 
             {{-- Logo --}}
             <a href="{{ route('home') }}" class="flex-shrink-0">
-                <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet — Since 1886" class="h-11 md:h-12 w-auto">
+                <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet — Since 1886" style="height:42px; width:auto; display:block;">
             </a>
 
             {{-- Desktop Nav --}}
@@ -277,7 +277,7 @@
             <div class="col-span-2 md:col-span-1">
                 {{-- Large logo --}}
                 <a href="{{ route('home') }}" class="inline-block mb-7">
-                    <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet" class="h-16 w-auto">
+                    <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet" style="height:56px; width:auto; display:block;">
                 </a>
 
                 {{-- Connect With Us --}}
