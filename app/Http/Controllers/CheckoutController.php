@@ -34,13 +34,21 @@ class CheckoutController extends Controller
                 $discount = $couponModel->calculateDiscount($subtotal);
             }
         }
-        $shipping = $subtotal > 5000 ? 0 : 150;
-        $tax      = round(($subtotal - $discount) * 0.08, 2);
-        $total    = $subtotal - $discount + $shipping + $tax;
+        $deliveryCost = Cart::deliveryCost(session('cart_delivery', 'whiteglove'));
+        $addonsCost   = Cart::addonsCost((array) session('cart_addons', []));
+        $shipping     = $deliveryCost + $addonsCost;
+        $tax          = round(($subtotal - $discount) * 0.08, 2);
+        $total        = $subtotal - $discount + $shipping + $tax;
 
         $addresses = Auth::user()->addresses()->get();
 
-        Stripe::setApiKey(config('services.stripe.secret'));
+        $stripeKey = config('services.stripe.secret');
+        if (! $stripeKey || str_contains($stripeKey, '_KEY') || ! str_starts_with($stripeKey, 'sk_')) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Payment processing is temporarily unavailable. Please contact us to complete your order.');
+        }
+
+        Stripe::setApiKey($stripeKey);
         $paymentIntent = PaymentIntent::create([
             'amount'   => (int)($total * 100),
             'currency' => 'usd',
@@ -49,7 +57,7 @@ class CheckoutController extends Controller
 
         return view('checkout.index', compact(
             'cart', 'subtotal', 'discount', 'shipping', 'tax', 'total',
-            'coupon', 'addresses', 'paymentIntent'
+            'coupon', 'addresses', 'paymentIntent', 'deliveryCost', 'addonsCost'
         ));
     }
 
@@ -80,9 +88,11 @@ class CheckoutController extends Controller
                 }
             }
         }
-        $shipping = $subtotal > 5000 ? 0 : 150;
-        $tax      = round(($subtotal - $discount) * 0.08, 2);
-        $total    = $subtotal - $discount + $shipping + $tax;
+        $deliveryCost = Cart::deliveryCost(session('cart_delivery', 'whiteglove'));
+        $addonsCost   = Cart::addonsCost((array) session('cart_addons', []));
+        $shipping     = $deliveryCost + $addonsCost;
+        $tax          = round(($subtotal - $discount) * 0.08, 2);
+        $total        = $subtotal - $discount + $shipping + $tax;
 
         $shippingAddress = $request->only('full_name', 'line1', 'line2', 'city', 'state', 'zip', 'country', 'phone');
 
@@ -114,7 +124,7 @@ class CheckoutController extends Controller
         }
 
         $cart->items()->delete();
-        session()->forget('coupon');
+        session()->forget(['coupon', 'cart_delivery', 'cart_addons']);
 
         return redirect()->route('orders.confirmation', $order->id)->with('success', 'Order placed successfully!');
     }

@@ -55,6 +55,7 @@
     selectedColor: '{{ $product->colors->first()?->color_name ?? '' }}',
     selectedFinish: 'Machine Narrow Binding',
     qty: 1,
+    customOpen: false, wFt: '', wIn: '', hFt: '', hIn: '',
     addOns: { protector: false, padding: false, spot: false },
     delivery: 'whiteglove',
     showZip: false,
@@ -317,7 +318,7 @@
                 </div>
 
                 {{-- ── DIMENSIONS ── --}}
-                <div class="mb-5" x-data="{ customOpen: false, wFt:'', wIn:'', hFt:'', hIn:'' }">
+                <div class="mb-5">
                     <p style="font-size:13px; font-weight:600; color:#121212; letter-spacing:0.02em;" class="mb-3">Dimensions</p>
 
                     {{-- Standard size pills --}}
@@ -608,6 +609,12 @@
                     <input type="hidden" name="quantity" :value="qty">
                     <input type="hidden" name="size" :value="selectedSize">
                     <input type="hidden" name="color" :value="selectedColor">
+                    <input type="hidden" name="custom_width"  :value="selectedSize==='custom' ? ((parseFloat(wFt)||0)+(parseFloat(wIn)||0)/12).toFixed(2) : ''">
+                    <input type="hidden" name="custom_length" :value="selectedSize==='custom' ? ((parseFloat(hFt)||0)+(parseFloat(hIn)||0)/12).toFixed(2) : ''">
+                    <input type="hidden" name="delivery_method" :value="delivery">
+                    <template x-if="addOns.protector"><input type="hidden" name="addons[]" value="protector"></template>
+                    <template x-if="addOns.padding"><input type="hidden" name="addons[]" value="padding"></template>
+                    <template x-if="addOns.spot"><input type="hidden" name="addons[]" value="spot"></template>
 
                     <div class="flex gap-2">
                         <button type="submit"
@@ -626,9 +633,12 @@
                     </div>
                 </form>
 
-                @auth
-                <form action="{{ route('sample.request.product', $product) }}" method="POST" class="mb-2">
+                {{-- Order Sample: adds a free swatch to the cart (no login needed; #8) --}}
+                <form action="{{ route('cart.add') }}" method="POST" class="mb-2">
                     @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <input type="hidden" name="is_sample" value="1">
+                    <input type="hidden" name="color" :value="selectedColor">
                     <button type="submit"
                             class="w-full flex items-center justify-center border transition-colors hover:bg-stone-50"
                             style="height:44px; border-color:rgba(18,18,18,0.25); border-radius:3px;
@@ -636,14 +646,6 @@
                         Order Sample
                     </button>
                 </form>
-                @else
-                <a href="{{ route('login') }}"
-                   class="w-full flex items-center justify-center border transition-colors hover:bg-stone-50 mb-2"
-                   style="height:44px; border-color:rgba(18,18,18,0.25); border-radius:3px;
-                          font-family:'Lusitana',serif; font-size:14px; color:#121212; text-decoration:none;">
-                    Order Sample
-                </a>
-                @endauth
 
                 <div class="grid grid-cols-2 gap-2 mb-4">
                     <button type="button" @click="showEmailModal = true"
