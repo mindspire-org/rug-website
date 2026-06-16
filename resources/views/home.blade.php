@@ -175,10 +175,14 @@
      4. WEAVE YOUR DREAM RUG — full-bleed dark photo section (swapped down)
 ══════════════════════════════════════════════════════════════ --}}
 <section class="relative h-[55vh] min-h-[420px] flex items-center justify-center overflow-hidden">
-    {{-- Background: Frame 427319720 photo --}}
+    {{-- Background: looping video (falls back to the photo as poster / if no video) --}}
     <div class="absolute inset-0">
-        <img src="{{ asset('images/frame 427319720.png') }}" alt="Weave Your Dream Rug"
-             class="w-full h-full object-cover object-center">
+        <video class="w-full h-full object-cover object-center" autoplay muted loop playsinline
+               poster="{{ asset('images/frame 427319720.png') }}">
+            <source src="{{ asset('videos/weave.mp4') }}" type="video/mp4">
+            <source src="{{ asset('videos/weave.webm') }}" type="video/webm">
+            <img src="{{ asset('images/frame 427319720.png') }}" alt="Weave Your Dream Rug" class="w-full h-full object-cover object-center">
+        </video>
         <div class="absolute inset-0" style="background:rgba(18,18,18,0.52);"></div>
     </div>
 

@@ -5,22 +5,29 @@
     $c2            = $product->colors->last()?->color_hex  ?? '#a08060';
     $isFav         = auth()->check() && auth()->user()->wishlist->contains('product_id', $product->id);
 
+    // Category bubble — always one of the three: In Stock / Custom Size / Made to Order
     $catSlug = $product->category->slug ?? '';
-    if ($catSlug === 'custom-size')       $badgeLabel = 'Custom Size';
-    elseif ($catSlug === 'made-on-order') $badgeLabel = 'Made to Order';
-    elseif ($product->is_new_arrival)     $badgeLabel = 'New Arrivals';
-    elseif ($product->sale_price)         $badgeLabel = 'Sale';
-    else                                  $badgeLabel = 'In Stock';
+    if ($catSlug === 'custom-size')        $badgeLabel = 'Custom Size';
+    elseif ($catSlug === 'made-on-order')  $badgeLabel = 'Made to Order';
+    elseif ($catSlug === 'in-stock')       $badgeLabel = 'In Stock';
+    else                                   $badgeLabel = ($product->stock ?? 0) > 0 ? 'In Stock' : 'Made to Order';
 
     // Secondary image for hover swap (#18)
     $secondImg = ($product->relationLoaded('images') ? $product->images->count() > 1 : $product->images()->count() > 1)
         ? route('media.show', ['path' => $product->images->get(1)->path])
         : null;
 
-    // Price of the smallest available size (e.g. 9x9), else base price (#14)
-    $cardPrice = $product->dimensionPrices->count()
-        ? $product->dimensionPrices->sortBy(fn($d) => (float) $d->width * (float) $d->length)->first()->effective_price
-        : ($product->sale_price ?? $product->price);
+    // Price per square foot (#4): from the smallest dimension's price ÷ its area,
+    // else the base price referenced to a 6×9 (54 sq ft) rug.
+    $smallestDim = $product->dimensionPrices->count()
+        ? $product->dimensionPrices->sortBy(fn($d) => (float) $d->width * (float) $d->length)->first()
+        : null;
+    if ($smallestDim && (float) $smallestDim->width > 0 && (float) $smallestDim->length > 0) {
+        $pricePerSqft = (float) $smallestDim->effective_price / ((float) $smallestDim->width * (float) $smallestDim->length);
+    } else {
+        $pricePerSqft = (float) ($product->sale_price ?? $product->price) / 54;
+    }
+    $pricePerSqft = max(1, round($pricePerSqft));
 @endphp
 
 {{-- Card: gap 10px between image and meta ── --}}
@@ -92,9 +99,9 @@
                class="flex-1 min-w-0 truncate">
                 {{ $product->name }}
             </p>
-            <span style="font-family:'Lusitana',serif; font-size:18px; line-height:26px; font-weight:400;
+            <span style="font-family:'Lusitana',serif; font-size:16px; line-height:26px; font-weight:400;
                          color:#171717; white-space:nowrap; flex-shrink:0;">
-                ${{ number_format($cardPrice, 0) }}
+                ${{ number_format($pricePerSqft, 0) }}<span style="font-size:12px; color:rgba(23,23,23,0.6);">/sq ft</span>
             </span>
         </div>
 

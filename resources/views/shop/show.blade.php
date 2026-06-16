@@ -73,22 +73,22 @@
     get currentImg() { return this.images[this.imgIdx] ?? '{{ $primaryImg }}'; },
     prev() { this.imgIdx = (this.imgIdx - 1 + this.images.length) % this.images.length; },
     next() { this.imgIdx = (this.imgIdx + 1) % this.images.length; },
-    get estimateTotal() {
-        let sizePrice = 0;
+    get sizePrice() {
         if (Object.keys(this.dimPrices).length > 0) {
             let dim = this.dimPrices[this.selectedSize];
-            sizePrice = dim ? (dim.sale_price ?? dim.price) : {{ $product->sale_price ?? $product->price }};
-        } else {
-            let base = {{ $product->sale_price ?? $product->price }};
-            let modifier = this.sizeModifiers[this.selectedSize] ?? 1;
-            let customSqFt = 1;
-            if (this.selectedSize === 'custom' && this.wFt && this.hFt) {
-                let w = parseFloat(this.wFt) + (parseFloat(this.wIn || 0) / 12);
-                let h = parseFloat(this.hFt) + (parseFloat(this.hIn || 0) / 12);
-                customSqFt = Math.max(1, w * h / 54);
-            }
-            sizePrice = base * (this.selectedSize === 'custom' ? customSqFt : modifier);
+            return dim ? (dim.sale_price ?? dim.price) : {{ $product->sale_price ?? $product->price }};
         }
+        let base = {{ $product->sale_price ?? $product->price }};
+        if (this.selectedSize === 'custom') {
+            let w = (parseFloat(this.wFt) || 0) + (parseFloat(this.wIn) || 0) / 12;
+            let h = (parseFloat(this.hFt) || 0) + (parseFloat(this.hIn) || 0) / 12;
+            let sqft = (w > 0 && h > 0) ? Math.max(1, w * h / 54) : 1;
+            return Math.round(base * sqft);
+        }
+        return base * (this.sizeModifiers[this.selectedSize] ?? 1);
+    },
+    get estimateTotal() {
+        let sizePrice = this.sizePrice;
         let add = 0;
         if (this.addOns.protector) add += 120;
         if (this.addOns.padding) add += 190;
@@ -195,9 +195,9 @@
                 {{-- Price --}}
                 <p style="font-family:'Lusitana',serif; font-size:20px; font-weight:700; color:#121212;" class="mb-3">
                     @if($hasDimPrices)
-                    <span x-text="dimPrices[selectedSize] ? '$' + (dimPrices[selectedSize].sale_price ?? dimPrices[selectedSize].price).toLocaleString('en-US', {maximumFractionDigits:0}) : '${{ number_format($product->sale_price ?? $product->price, 0) }}'">From ${{ number_format($firstDim?->effective_price ?? $product->effective_price, 0) }}</span>
+                    <span x-text="(selectedSize === 'custom' ? '' : 'From ') + '$' + sizePrice.toLocaleString('en-US', {maximumFractionDigits:0})">From ${{ number_format($firstDim?->effective_price ?? $product->effective_price, 0) }}</span>
                     @else
-                    <span x-text="'$' + ({{ $product->sale_price ?? $product->price }} * (sizeModifiers[selectedSize] ?? 1)).toLocaleString('en-US', {maximumFractionDigits:0})">From ${{ number_format($product->sale_price ?? $product->price, 0) }}</span>
+                    <span x-text="(selectedSize === 'custom' ? '' : 'From ') + '$' + sizePrice.toLocaleString('en-US', {maximumFractionDigits:0})">From ${{ number_format($product->sale_price ?? $product->price, 0) }}</span>
                     @endif
                 </p>
 

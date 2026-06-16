@@ -20,6 +20,15 @@ class ShopController extends Controller
         'Yellow'      => ['yellow', 'gold', 'mustard', 'citron', 'lemon'],
     ];
 
+    /** Material filter groups → keywords matched against products.material */
+    private const MATERIAL_GROUPS = [
+        'Wool'               => ['wool'],
+        'Wool & Silk'        => ['wool & silk', 'wool and silk', 'silk and wool', 'silkette'],
+        'Silk'               => ['silk'],
+        'Natural Fibers'     => ['cotton', 'jute', 'sisal', 'seagrass', 'hemp', 'bamboo', 'viscose', 'linen'],
+        'Performance Fibers' => ['polypropylene', 'poly', 'nylon', 'acrylic', 'polyester', 'solution dyed', 'olefin'],
+    ];
+
     public function index(Request $request)
     {
         $query = Product::active()->with(['primaryImage', 'images', 'dimensionPrices', 'colors', 'category', 'filterValues.attribute']);
@@ -65,17 +74,19 @@ class ShopController extends Controller
             });
         }
 
-        // ── Material (via product_filter_values OR direct column) ──
+        // ── Material (design groups matched by keyword against the material column) ──
         if ($request->filled('material')) {
             $materials = (array) $request->material;
-            $query->where(function ($q) use ($materials) {
-                // Try direct column first
-                $q->whereIn('material', $materials);
-                // Also try filter values
-                $q->orWhereHas('filterValues', function ($sq) use ($materials) {
-                    $sq->whereIn('value', $materials)
-                        ->orWhereIn('display_value', $materials);
-                });
+            $keywords = [];
+            foreach ($materials as $group) {
+                foreach (self::MATERIAL_GROUPS[$group] ?? [$group] as $kw) {
+                    $keywords[] = $kw;
+                }
+            }
+            $query->where(function ($q) use ($keywords) {
+                foreach ($keywords as $kw) {
+                    $q->orWhere('material', 'like', '%' . $kw . '%');
+                }
             });
         }
 
@@ -156,19 +167,18 @@ class ShopController extends Controller
         $categories = Category::where('is_active', true)->get();
         $materials  = Product::active()->whereNotNull('material')->distinct()->pluck('material');
 
-        // ── Filter options derived from REAL product data so selections actually match ──
-        $realOptions = [
-            // Colour stays as the 7 design groups (matched by keyword in the query above);
-            // showing all 193 raw colours would be unusable.
+        // ── Filter options ───────────────────────────────────────────────
+        // Colour + Material stay as the design's curated GROUPS (rendered from the
+        // blade defaults, matched by keyword in the queries above) — showing 193 raw
+        // colours / junk material rows would be unusable. Pattern/Size/Construction
+        // are derived from REAL product data so the values match exactly.
+        $realOptions = array_filter([
             'pattern'      => Product::active()->whereNotNull('style')->where('style', '!=', '')->distinct()->orderBy('style')->pluck('style')->all(),
-            'material'     => Product::active()->whereNotNull('material')->where('material', '!=', '')->distinct()->orderBy('material')->pluck('material')->all(),
             'size'         => \App\Models\ProductDimensionPrice::whereNotNull('label')->where('label', '!=', '')->distinct()->orderBy('label')->pluck('label')->all(),
             'construction' => Category::whereIn('slug', ['hand-knotted', 'hand-tufted', 'machine-loomed', 'flat-weave', 'hand-loomed'])->pluck('name')->all(),
-        ];
+        ]);
 
-        // Admin-configured overrides (Settings) take precedence where present
-        $adminOptions = json_decode(Setting::get('filter_options', '{}'), true) ?: [];
-        $filterOptions = array_merge(array_filter($realOptions), $adminOptions);
+        $filterOptions = $realOptions;
 
         return view('shop.index', compact('products', 'categories', 'materials', 'filterOptions'));
     }

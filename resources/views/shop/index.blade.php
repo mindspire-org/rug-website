@@ -51,7 +51,7 @@
                     @endif
                 @endforeach
                 <div class="relative" style="width:210px">
-                    <select name="sort" onchange="this.form.submit()"
+                    <select name="sort" onchange="if(!window.ccAjaxFilters)this.form.submit()"
                             class="appearance-none w-full bg-white focus:outline-none cursor-pointer pl-[14px] pr-8"
                             style="border:1px solid rgba(18,18,18,0.15); border-radius:4px; height:40px;
                                    font-family:'Lusitana',serif; font-size:15px; color:#121212;">
@@ -335,21 +335,70 @@
 
                 </form>
 
-                {{-- Auto-apply filters on checkbox change (#1) --}}
+                {{-- Auto-apply filters via AJAX — no full page refresh (#1) --}}
                 <script>
                 (function () {
                     var ff = document.getElementById('filter-form');
-                    if (!ff) return;
+                    var results = document.getElementById('product-results');
+                    if (!ff || !results || !window.fetch || !window.history.pushState) {
+                        // Fallback: full-submit on checkbox change
+                        if (ff) ff.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
+                            cb.addEventListener('change', function () { ff.submit(); });
+                        });
+                        return;
+                    }
+
+                    window.ccAjaxFilters = true;
+                    var base = @json(route('shop.index'));
+
+                    function buildUrl() {
+                        var params = new URLSearchParams(new FormData(ff));
+                        var sortSel = document.querySelector('select[name=sort]');
+                        if (sortSel) params.set('sort', sortSel.value);
+                        var cur = new URLSearchParams(window.location.search);
+                        ['search', 'category', 'tab'].forEach(function (k) {
+                            if (cur.get(k) && !params.get(k)) params.set(k, cur.get(k));
+                        });
+                        return base + '?' + params.toString();
+                    }
+
+                    function apply(url) {
+                        url = url || buildUrl();
+                        results.style.opacity = '0.45';
+                        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                            .then(function (r) { return r.text(); })
+                            .then(function (html) {
+                                var doc = new DOMParser().parseFromString(html, 'text/html');
+                                var fresh = doc.getElementById('product-results');
+                                if (fresh) results.innerHTML = fresh.innerHTML;
+                                results.style.opacity = '1';
+                                window.history.pushState({}, '', url);
+                                var top = results.getBoundingClientRect().top + window.pageYOffset - 90;
+                                window.scrollTo({ top: top, behavior: 'smooth' });
+                            })
+                            .catch(function () { window.location = url; });
+                    }
+
                     ff.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
-                        cb.addEventListener('change', function () { ff.submit(); });
+                        cb.addEventListener('change', function () { apply(); });
                     });
+                    var sortSel = document.querySelector('select[name=sort]');
+                    if (sortSel) sortSel.addEventListener('change', function () { apply(); });
+                    // Price range "Apply" (and any submit) → AJAX
+                    ff.addEventListener('submit', function (e) { e.preventDefault(); apply(); });
+                    // Pagination links inside the results → AJAX (product links have no page=)
+                    results.addEventListener('click', function (e) {
+                        var a = e.target.closest('a[href*="page="]');
+                        if (a) { e.preventDefault(); apply(a.href); }
+                    });
+                    window.addEventListener('popstate', function () { apply(window.location.href); });
                 })();
                 </script>
             </div>
         </aside>
 
         {{-- ── PRODUCT GRID ── Figma: 3 cols, gap 24px, card w 314px ── --}}
-        <div class="flex-1 min-w-0">
+        <div class="flex-1 min-w-0" id="product-results" style="transition:opacity .2s ease;">
             @if($products->count())
             <div class="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
                 @foreach($products as $product)

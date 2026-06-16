@@ -237,7 +237,7 @@
                     </div>
                 </div>
                 @else
-                <a href="{{ route('login') }}" class="hidden md:block text-white/80 hover:text-white transition-colors">
+                <a href="{{ route('login') }}" title="Account" class="hidden md:block text-white/80 hover:text-white transition-colors">
                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
                 </a>
                 @endauth
