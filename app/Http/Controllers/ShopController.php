@@ -9,6 +9,17 @@ use Illuminate\Http\Request;
 
 class ShopController extends Controller
 {
+    /** Colour filter groups → keywords matched against product_colors.color_name */
+    private const COLOR_GROUPS = [
+        'Neutrals'    => ['neutral', 'beige', 'cream', 'ivory', 'sand', 'stone', 'taupe', 'oat', 'greige', 'linen', 'natural', 'oyster', 'champagne', 'fawn', 'pewter', 'white', 'café', 'toffee', 'caramel'],
+        'Blues'       => ['blue', 'navy', 'teal', 'lagoon', 'indigo', 'denim', 'aqua', 'azure', 'royal'],
+        'Reds'        => ['red', 'rust', 'terracotta', 'crimson', 'burgundy', 'wine', 'apple', 'brick', 'merlot'],
+        'Greens'      => ['green', 'sage', 'olive', 'moss', 'emerald', 'forest', 'fern'],
+        'Warm Tones'  => ['gold', 'amber', 'toffee', 'caramel', 'brown', 'tan', 'copper', 'bronze', 'mustard', 'ochre', 'blush', 'peach', 'rose', 'terracotta'],
+        'Cool Tones'  => ['grey', 'gray', 'charcoal', 'silver', 'slate', 'pewter', 'steel'],
+        'Yellow'      => ['yellow', 'gold', 'mustard', 'citron', 'lemon'],
+    ];
+
     public function index(Request $request)
     {
         $query = Product::active()->with(['primaryImage', 'images', 'dimensionPrices', 'colors', 'category', 'filterValues.attribute']);
@@ -36,11 +47,21 @@ class ShopController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        // ── Color (via product_colors.color_name) ────────────────
+        // ── Color (groups matched by keyword against product_colors.color_name) ──
         if ($request->filled('color')) {
             $colors = (array) $request->color;
-            $query->whereHas('colors', function ($q) use ($colors) {
-                $q->whereIn('color_name', $colors);
+            $keywords = [];
+            foreach ($colors as $group) {
+                foreach (self::COLOR_GROUPS[$group] ?? [$group] as $kw) {
+                    $keywords[] = $kw;
+                }
+            }
+            $query->whereHas('colors', function ($q) use ($keywords) {
+                $q->where(function ($sub) use ($keywords) {
+                    foreach ($keywords as $kw) {
+                        $sub->orWhere('color_name', 'like', '%' . $kw . '%');
+                    }
+                });
             });
         }
 
@@ -136,13 +157,9 @@ class ShopController extends Controller
         $materials  = Product::active()->whereNotNull('material')->distinct()->pluck('material');
 
         // ── Filter options derived from REAL product data so selections actually match ──
-        $colorRows = \App\Models\ProductColor::query()
-            ->whereNotNull('color_name')->where('color_name', '!=', '')
-            ->get(['color_name', 'color_hex'])
-            ->unique('color_name')->sortBy('color_name')->values();
-
         $realOptions = [
-            'color'        => $colorRows->map(fn ($c) => ['name' => $c->color_name, 'hex' => $c->color_hex ?: '#cccccc'])->all(),
+            // Colour stays as the 7 design groups (matched by keyword in the query above);
+            // showing all 193 raw colours would be unusable.
             'pattern'      => Product::active()->whereNotNull('style')->where('style', '!=', '')->distinct()->orderBy('style')->pluck('style')->all(),
             'material'     => Product::active()->whereNotNull('material')->where('material', '!=', '')->distinct()->orderBy('material')->pluck('material')->all(),
             'size'         => \App\Models\ProductDimensionPrice::whereNotNull('label')->where('label', '!=', '')->distinct()->orderBy('label')->pluck('label')->all(),
