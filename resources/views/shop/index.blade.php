@@ -88,6 +88,20 @@
             <div style="background:#F9F9F9; border:1px solid rgba(18,18,18,0.05);
                         box-shadow:0px 4px 8px rgba(10,13,18,0.02), 0px 2px 4px -2px rgba(10,13,18,0.02);
                         border-radius:4px; padding:30px;">
+                {{-- Robust hover/checked states (independent of the compiled Tailwind build) --}}
+                <style>
+                    #filter-form label { cursor: pointer; }
+                    #filter-form label > span { transition: background-color .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+                    /* Pills / size / availability: hover */
+                    #filter-form label:hover > span:not([class*="rounded-[6px]"]) { border-color:#121212 !important; background:#f5f3f0; }
+                    /* Pills / size / availability: checked */
+                    #filter-form input:not([name="color[]"]):checked + span { background:#121212 !important; color:#fff !important; border-color:#121212 !important; }
+                    /* Colour swatch: hover + checked rings */
+                    #filter-form label:hover input[name="color[]"]:not(:checked) + span { box-shadow:0 0 0 2px #fff, 0 0 0 3px rgba(18,18,18,.4); }
+                    #filter-form input[name="color[]"]:checked + span { box-shadow:0 0 0 2px #fff, 0 0 0 3px #121212 !important; }
+                    /* Keyboard focus accessibility */
+                    #filter-form input:focus-visible + span { outline:2px solid #E8651A; outline-offset:2px; }
+                </style>
                 <form method="GET" action="{{ route('shop.index') }}" id="filter-form">
                     @if(request('tab'))  <input type="hidden" name="tab"  value="{{ request('tab') }}">  @endif
                     @if(request('sort')) <input type="hidden" name="sort" value="{{ request('sort') }}"> @endif
@@ -114,7 +128,6 @@
                         ['key'=>'color',        'label'=>'COLOR',                  'open'=>'color'],
                         ['key'=>'pattern',      'label'=>'PATTERN / STYLE',        'open'=>'pattern'],
                         ['key'=>'material',     'label'=>'MATERIAL',               'open'=>'material'],
-                        ['key'=>'room',         'label'=>'ROOM',                   'open'=>'room'],
                         ['key'=>'construction', 'label'=>'CONSTRUCTION',           'open'=>'construction'],
                         ['key'=>'size',         'label'=>'SIZE',                   'open'=>'size'],
                         ['key'=>'availability', 'label'=>'AVAILABILITY / TIMELINE','open'=>'availability'],

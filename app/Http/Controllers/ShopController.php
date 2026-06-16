@@ -70,12 +70,17 @@ class ShopController extends Controller
             });
         }
 
-        // ── Construction (via product_filter_values) ─────────────
+        // ── Construction (matches construction-type category or filter values) ──
         if ($request->filled('construction')) {
             $constructions = (array) $request->construction;
-            $query->whereHas('filterValues', function ($q) use ($constructions) {
-                $q->whereIn('value', $constructions)
-                  ->orWhereIn('display_value', $constructions);
+            $query->where(function ($q) use ($constructions) {
+                $q->whereHas('category', function ($c) use ($constructions) {
+                        $c->whereIn('name', $constructions);
+                    })
+                  ->orWhereHas('filterValues', function ($sq) use ($constructions) {
+                        $sq->whereIn('value', $constructions)
+                            ->orWhereIn('display_value', $constructions);
+                    });
             });
         }
 
@@ -130,8 +135,23 @@ class ShopController extends Controller
         $categories = Category::where('is_active', true)->get();
         $materials  = Product::active()->whereNotNull('material')->distinct()->pluck('material');
 
-        // ── Filter options (admin-editable via Settings) ──────────
-        $filterOptions = json_decode(Setting::get('filter_options', '{}'), true) ?: [];
+        // ── Filter options derived from REAL product data so selections actually match ──
+        $colorRows = \App\Models\ProductColor::query()
+            ->whereNotNull('color_name')->where('color_name', '!=', '')
+            ->get(['color_name', 'color_hex'])
+            ->unique('color_name')->sortBy('color_name')->values();
+
+        $realOptions = [
+            'color'        => $colorRows->map(fn ($c) => ['name' => $c->color_name, 'hex' => $c->color_hex ?: '#cccccc'])->all(),
+            'pattern'      => Product::active()->whereNotNull('style')->where('style', '!=', '')->distinct()->orderBy('style')->pluck('style')->all(),
+            'material'     => Product::active()->whereNotNull('material')->where('material', '!=', '')->distinct()->orderBy('material')->pluck('material')->all(),
+            'size'         => \App\Models\ProductDimensionPrice::whereNotNull('label')->where('label', '!=', '')->distinct()->orderBy('label')->pluck('label')->all(),
+            'construction' => Category::whereIn('slug', ['hand-knotted', 'hand-tufted', 'machine-loomed', 'flat-weave', 'hand-loomed'])->pluck('name')->all(),
+        ];
+
+        // Admin-configured overrides (Settings) take precedence where present
+        $adminOptions = json_decode(Setting::get('filter_options', '{}'), true) ?: [];
+        $filterOptions = array_merge(array_filter($realOptions), $adminOptions);
 
         return view('shop.index', compact('products', 'categories', 'materials', 'filterOptions'));
     }
