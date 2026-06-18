@@ -36,10 +36,13 @@ class ShopController extends Controller
         // ── Tab filter ──────────────────────────────────────────
         $tab = $request->get('tab', 'all');
         match ($tab) {
-            'signature'  => $query->where('featured', true),
-            'bestseller' => $query->where('is_bestseller', true),
-            'new'        => $query->where('is_new_arrival', true),
-            default      => null,
+            'signature'     => $query->where('featured', true),
+            'bestseller'    => $query->where('is_bestseller', true),
+            'new'           => $query->where('is_new_arrival', true),
+            'in_stock'      => $query->whereHas('category', fn($q) => $q->where('slug', 'in-stock')),
+            'made_to_order' => $query->whereHas('category', fn($q) => $q->where('slug', 'made-on-order')),
+            'custom_size'   => $query->whereHas('category', fn($q) => $q->where('slug', 'custom-size')),
+            default         => null,
         };
 
         // ── Category ────────────────────────────────────────────
@@ -133,13 +136,19 @@ class ShopController extends Controller
             });
         }
 
-        // ── Availability (maps to product flags) ─────────────────
+        // ── Availability (maps to categories) ─────────────────
         if ($request->filled('availability')) {
             $avail = (array) $request->availability;
             $query->where(function ($q) use ($avail) {
-                if (in_array('In Stock', $avail))      $q->orWhere('stock', '>', 0);
-                if (in_array('Custom Size', $avail))   $q->orWhere('featured', true);
-                if (in_array('Made to Order', $avail)) $q->orWhere('stock', 0);
+                if (in_array('In Stock', $avail)) {
+                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'in-stock'));
+                }
+                if (in_array('Custom Size', $avail)) {
+                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'custom-size'));
+                }
+                if (in_array('Made to Order', $avail)) {
+                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'made-on-order'));
+                }
             });
         }
 

@@ -3,6 +3,16 @@
 
 @section('content')
 
+{{-- Filter option states — explicit CSS so selected/hover survive the prebuilt Tailwind purge on production --}}
+<style>
+    #filter-form .cc-fopt { cursor:pointer; transition:all .15s ease; }
+    #filter-form .cc-pill:hover { border-color:#121212 !important; background:#f5f5f5; }
+    #filter-form .cc-color:hover { box-shadow:0 0 0 1px #fff, 0 0 0 3px rgba(18,18,18,0.4); }
+    #filter-form input:checked + .cc-pill { background:#121212 !important; color:#fff !important; border-color:#121212 !important; }
+    #filter-form input:checked + .cc-color { box-shadow:0 0 0 2px #fff, 0 0 0 4px #121212; }
+    #product-results { transition:opacity .2s ease; }
+</style>
+
 {{-- ── PAGE HEADER ── Figma: padding 100px, gap 24px, bg #FFF ── --}}
 <div class="bg-white pt-16 pb-10 text-center">
     {{-- Badge: bg #F3E7CF, border-radius 40px, px 16px py 10px ── --}}
@@ -24,10 +34,13 @@
             {{-- Tabs ── --}}
             <div class="flex items-center gap-8">
                 @foreach([
-                    ['all',        'All'],
-                    ['signature',  'Signature Items'],
-                    ['bestseller', 'Best Sellers'],
-                    ['new',        'New Arrivals'],
+                    ['all',         'All'],
+                    ['signature',   'Signature Items'],
+                    ['bestseller',  'Best Sellers'],
+                    ['new',         'New Arrivals'],
+                    ['in_stock',    'In Stock'],
+                    ['made_to_order','Made to Order'],
+                    ['custom_size', 'Custom Size'],
                 ] as [$val, $label])
                 <a href="{{ route('shop.index', array_merge(request()->except('tab'), ['tab' => $val])) }}"
                    style="font-family:'Lusitana',serif; font-size:16px; line-height:21px; white-space:nowrap;
@@ -181,7 +194,7 @@
                                         <input type="checkbox" name="color[]" value="{{ $c['name'] }}"
                                                {{ in_array($c['name'],(array)request('color',[])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <span class="block rounded-[6px] peer-checked:ring-2 peer-checked:ring-[#121212] peer-checked:ring-offset-1 transition-all"
+                                        <span class="cc-fopt cc-color block rounded-[6px] peer-checked:ring-2 peer-checked:ring-[#121212] peer-checked:ring-offset-1 transition-all"
                                               style="width:52px; height:52px; background-color:{{ $c['hex'] }};
                                                      border:1px solid rgba(18,18,18,0.08);"></span>
                                         <span style="font-family:'Lusitana',serif; font-size:11px; line-height:14px;
@@ -197,7 +210,7 @@
                                         <input type="checkbox" name="pattern[]" value="{{ $opt }}"
                                                {{ in_array($opt,(array)request('pattern',[])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <span class="inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
+                                        <span class="cc-fopt cc-pill inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
                                               style="border:1px solid rgba(18,18,18,0.25);
                                                      font-family:'Lusitana',serif; font-size:13px; color:#121212;">
                                             {{ $opt }}
@@ -213,7 +226,7 @@
                                         <input type="checkbox" name="material[]" value="{{ $mat }}"
                                                {{ in_array($mat,(array)request('material',[])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <span class="inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
+                                        <span class="cc-fopt cc-pill inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
                                               style="border:1px solid rgba(18,18,18,0.25);
                                                      font-family:'Lusitana',serif; font-size:13px; color:#121212;">
                                             {{ $mat }}
@@ -229,7 +242,7 @@
                                         <input type="checkbox" name="room[]" value="{{ $opt }}"
                                                {{ in_array($opt,(array)request('room',[])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <span class="inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
+                                        <span class="cc-fopt cc-pill inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
                                               style="border:1px solid rgba(18,18,18,0.25);
                                                      font-family:'Lusitana',serif; font-size:13px; color:#121212;">
                                             {{ $opt }}
@@ -245,7 +258,7 @@
                                         <input type="checkbox" name="construction[]" value="{{ $opt }}"
                                                {{ in_array($opt,(array)request('construction',[])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <span class="inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
+                                        <span class="cc-fopt cc-pill inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
                                               style="border:1px solid rgba(18,18,18,0.25);
                                                      font-family:'Lusitana',serif; font-size:13px; color:#121212;">
                                             {{ $opt }}
@@ -261,7 +274,7 @@
                                         <input type="checkbox" name="size[]" value="{{ $opt }}"
                                                {{ in_array($opt,(array)request('size',[])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <span class="flex items-center justify-center py-2 peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
+                                        <span class="cc-fopt cc-pill flex items-center justify-center py-2 peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
                                               style="border:1px solid rgba(18,18,18,0.25); border-radius:4px;
                                                      font-family:'Lusitana',serif; font-size:13px; color:#121212;">
                                             {{ $opt }}
@@ -277,7 +290,7 @@
                                         <input type="checkbox" name="availability[]" value="{{ $a['value'] }}"
                                                {{ in_array($a['value'],(array)request('availability',[])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <span class="flex items-center w-full px-3 py-2.5 peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
+                                        <span class="cc-fopt cc-pill flex items-center w-full px-3 py-2.5 peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
                                               style="border:1px solid rgba(18,18,18,0.25); border-radius:4px;
                                                      font-family:'Lusitana',serif; font-size:13px; color:#121212;">
                                             {{ $a['label'] }}
