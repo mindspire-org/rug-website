@@ -73,6 +73,7 @@
                         <option value="price_desc" {{ request('sort')==='price_desc'           ?'selected':'' }}>Price: High to Low</option>
                         <option value="newest"     {{ request('sort')==='newest'               ?'selected':'' }}>Newest</option>
                         <option value="name_asc"   {{ request('sort')==='name_asc'             ?'selected':'' }}>Name A–Z</option>
+                        <option value="name_desc"  {{ request('sort')==='name_desc'            ?'selected':'' }}>Name Z–A</option>
                     </select>
                     <svg class="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2"
                          width="16" height="16" fill="none" stroke="#121212" stroke-width="1.8" viewBox="0 0 24 24">
@@ -138,7 +139,7 @@
                     {{-- Filter Sections: label 15px Lusitana uppercase, border-bottom rgba(18,18,18,0.1) ── --}}
                     @php
                     $filterSections = [
-                        ['key'=>'color',        'label'=>'COLOR',                  'open'=>'color'],
+                        ['key'=>'color',        'label'=>'REFINED COLOR',          'open'=>'color'],
                         ['key'=>'pattern',      'label'=>'PATTERN / STYLE',        'open'=>'pattern'],
                         ['key'=>'material',     'label'=>'MATERIAL',               'open'=>'material'],
                         ['key'=>'construction', 'label'=>'CONSTRUCTION',           'open'=>'construction'],
@@ -172,6 +173,7 @@
                             ['hex'=>'#8B2020','name'=>'Reds'],['hex'=>'#2D5C3A','name'=>'Greens'],
                             ['hex'=>'#B07A4A','name'=>'Warm Tones'],['hex'=>'#5B7B8A','name'=>'Cool Tones'],
                             ['hex'=>'#D4C832','name'=>'Yellow'],
+                            ['hex'=>'#2B2B2B','name'=>'Black & Grey'],
                         ];
                         $fo_pattern      = $filterOptions['pattern']      ?? ['Solid','Stripe','Grid','Geometric','Abstract','Classic & Ornate'];
                         $fo_material     = $filterOptions['material']     ?? ['Wool','Wool & Silk','Natural Fibers','Silk','Performance Fibers'];

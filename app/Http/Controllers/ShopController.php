@@ -18,6 +18,7 @@ class ShopController extends Controller
         'Warm Tones'  => ['gold', 'amber', 'toffee', 'caramel', 'brown', 'tan', 'copper', 'bronze', 'mustard', 'ochre', 'blush', 'peach', 'rose', 'terracotta'],
         'Cool Tones'  => ['grey', 'gray', 'charcoal', 'silver', 'slate', 'pewter', 'steel'],
         'Yellow'      => ['yellow', 'gold', 'mustard', 'citron', 'lemon'],
+        'Black & Grey'=> ['black', 'ebony', 'onyx', 'jet', 'graphite', 'charcoal', 'grey', 'gray'],
     ];
 
     /** Material filter groups → keywords matched against products.material */
@@ -169,6 +170,7 @@ class ShopController extends Controller
             'price_desc' => $query->orderBy('price', 'desc'),
             'newest'     => $query->orderBy('created_at', 'desc'),
             'name_asc'   => $query->orderBy('name', 'asc'),
+            'name_desc'  => $query->orderBy('name', 'desc'),
             default      => $query->orderByDesc('featured')->orderBy('name'),
         };
 

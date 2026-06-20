@@ -17,17 +17,14 @@
         ? route('media.show', ['path' => $product->images->get(1)->path])
         : null;
 
-    // Price per square foot (#4): from the smallest dimension's price ÷ its area,
-    // else the base price referenced to a 6×9 (54 sq ft) rug.
+    // Full transparent price (US-law): the smallest size's full price (e.g. Aster
+    // Grove 6'x9' = $1,674), else the product's base price (already a full price).
     $smallestDim = $product->dimensionPrices->count()
         ? $product->dimensionPrices->sortBy(fn($d) => (float) $d->width * (float) $d->length)->first()
         : null;
-    if ($smallestDim && (float) $smallestDim->width > 0 && (float) $smallestDim->length > 0) {
-        $pricePerSqft = (float) $smallestDim->effective_price / ((float) $smallestDim->width * (float) $smallestDim->length);
-    } else {
-        $pricePerSqft = (float) ($product->sale_price ?? $product->price) / 54;
-    }
-    $pricePerSqft = max(1, round($pricePerSqft));
+    $cardPrice = $smallestDim
+        ? (float) $smallestDim->effective_price
+        : (float) ($product->sale_price ?? $product->price);
 @endphp
 
 {{-- Card: gap 10px between image and meta ── --}}
@@ -99,9 +96,9 @@
                class="flex-1 min-w-0 truncate">
                 {{ $product->name }}
             </p>
-            <span style="font-family:'Lusitana',serif; font-size:16px; line-height:26px; font-weight:400;
+            <span style="font-family:'Lusitana',serif; font-size:18px; line-height:26px; font-weight:400;
                          color:#171717; white-space:nowrap; flex-shrink:0;">
-                ${{ number_format($pricePerSqft, 0) }}<span style="font-size:12px; color:rgba(23,23,23,0.6);">/sq ft</span>
+                ${{ number_format($cardPrice, 2) }}
             </span>
         </div>
 
