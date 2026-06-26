@@ -7,7 +7,7 @@
 
     // Category bubble — always one of the three: In Stock / Custom Size / Made to Order
     $catSlug = $product->category->slug ?? '';
-    if ($catSlug === 'custom-size')        $badgeLabel = 'Custom Size';
+    if ($catSlug === 'custom-size')        $badgeLabel = 'Fully Custom';
     elseif ($catSlug === 'made-on-order')  $badgeLabel = 'Made to Order';
     elseif ($catSlug === 'in-stock')       $badgeLabel = 'In Stock';
     else                                   $badgeLabel = ($product->stock ?? 0) > 0 ? 'In Stock' : 'Made to Order';

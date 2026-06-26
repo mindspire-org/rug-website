@@ -11,10 +11,10 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'details', 'care_instructions',
+        'name', 'slug', 'sku', 'description', 'details', 'care_instructions',
         'price', 'sale_price', 'category_id', 'stock', 'featured',
         'is_bestseller', 'is_new_arrival', 'status', 'material',
-        'origin', 'dimensions', 'style',
+        'origin', 'dimensions', 'style', 'refined_color',
     ];
 
     protected $casts = [
@@ -65,6 +65,16 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function dimensionPrices()
+    {
+        return $this->hasMany(ProductDimensionPrice::class)->orderBy('sort_order');
+    }
+
+    public function defaultDimension()
+    {
+        return $this->hasOne(ProductDimensionPrice::class)->where('is_default', true);
+    }
+
     public function getEffectivePriceAttribute()
     {
         return $this->sale_price ?? $this->price;
@@ -78,10 +88,40 @@ class Product extends Model
     public function getPrimaryImageUrlAttribute()
     {
         $img = $this->primaryImage;
-        if ($img) return asset('storage/' . $img->path);
+        if ($img) {
+            return route('media.show', ['path' => $img->path]);
+        }
+
+        // Try any available image
         $first = $this->images->first();
-        if ($first) return asset('storage/' . $first->path);
+        if ($first) {
+            return route('media.show', ['path' => $first->path]);
+        }
+
         return asset('images/placeholder-rug.jpg');
+    }
+
+    /**
+     * Check if image file actually exists on disk.
+     * Tries public/storage/ first (web-facing) then storage/app/public/ (symlink target).
+     */
+    private function imageFileExists($path)
+    {
+        if (empty($path)) return false;
+
+        // 1. Check public/storage/ — the path the web server actually serves
+        $publicPath = public_path('storage/' . $path);
+        if (file_exists($publicPath) && is_file($publicPath) && filesize($publicPath) > 100) {
+            return true;
+        }
+
+        // 2. Check storage/app/public/ — Laravel's default storage location
+        $storagePath = storage_path('app/public/' . $path);
+        if (file_exists($storagePath) && is_file($storagePath) && filesize($storagePath) > 100) {
+            return true;
+        }
+
+        return false;
     }
 
     public function scopeActive($query)
@@ -102,5 +142,15 @@ class Product extends Model
     public function scopeNewArrivals($query)
     {
         return $query->where('is_new_arrival', true);
+    }
+
+    /**
+     * Get filter values associated with this product
+     */
+    public function filterValues()
+    {
+        return $this->belongsToMany(ProductFilterValue::class, 'product_filter_value_product')
+            ->withPivot('product_filter_attribute_id')
+            ->withTimestamps();
     }
 }

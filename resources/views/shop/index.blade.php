@@ -173,7 +173,7 @@
                             ['hex'=>'#8B2020','name'=>'Reds'],['hex'=>'#2D5C3A','name'=>'Greens'],
                             ['hex'=>'#B07A4A','name'=>'Warm Tones'],['hex'=>'#5B7B8A','name'=>'Cool Tones'],
                             ['hex'=>'#D4C832','name'=>'Yellow'],
-                            ['hex'=>'#2B2B2B','name'=>'Black & Grey'],
+                            ['hex'=>'#000000','name'=>'Black'],
                         ];
                         $fo_pattern      = $filterOptions['pattern']      ?? ['Solid','Stripe','Grid','Geometric','Abstract','Classic & Ornate'];
                         $fo_material     = $filterOptions['material']     ?? ['Wool','Wool & Silk','Natural Fibers','Silk','Performance Fibers'];

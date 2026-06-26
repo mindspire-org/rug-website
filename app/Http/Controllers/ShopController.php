@@ -18,7 +18,7 @@ class ShopController extends Controller
         'Warm Tones'  => ['gold', 'amber', 'toffee', 'caramel', 'brown', 'tan', 'copper', 'bronze', 'mustard', 'ochre', 'blush', 'peach', 'rose', 'terracotta'],
         'Cool Tones'  => ['grey', 'gray', 'charcoal', 'silver', 'slate', 'pewter', 'steel'],
         'Yellow'      => ['yellow', 'gold', 'mustard', 'citron', 'lemon'],
-        'Black & Grey'=> ['black', 'ebony', 'onyx', 'jet', 'graphite', 'charcoal', 'grey', 'gray'],
+        'Black'       => ['black', 'ebony', 'onyx', 'jet', 'graphite'],
     ];
 
     /** Material filter groups → keywords matched against products.material */
@@ -60,7 +60,10 @@ class ShopController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        // ── Color (groups matched by keyword against product_colors.color_name) ──
+        // ── Refined Color ──
+        // Primary: the admin-assigned refined_color (one of the 8 options).
+        // Fallback (until the catalogue is fully tagged): keyword match on the
+        // product's actual colour names.
         if ($request->filled('color')) {
             $colors = (array) $request->color;
             $keywords = [];
@@ -69,12 +72,15 @@ class ShopController extends Controller
                     $keywords[] = $kw;
                 }
             }
-            $query->whereHas('colors', function ($q) use ($keywords) {
-                $q->where(function ($sub) use ($keywords) {
-                    foreach ($keywords as $kw) {
-                        $sub->orWhere('color_name', 'like', '%' . $kw . '%');
-                    }
-                });
+            $query->where(function ($outer) use ($colors, $keywords) {
+                $outer->whereIn('refined_color', $colors)
+                    ->orWhereHas('colors', function ($q) use ($keywords) {
+                        $q->where(function ($sub) use ($keywords) {
+                            foreach ($keywords as $kw) {
+                                $sub->orWhere('color_name', 'like', '%' . $kw . '%');
+                            }
+                        });
+                    });
             });
         }
 
