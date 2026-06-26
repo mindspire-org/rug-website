@@ -8,8 +8,8 @@
     // Determine product type for conditional sections — driven by the product's
     // category first (in-stock / custom-size / made-on-order), with heuristic fallback.
     $catSlug = $product->category->slug ?? '';
-    $isCustomSize  = $catSlug === 'custom-size';
-    $isMadeToOrder = $catSlug === 'made-on-order';
+    $isCustomSize  = $catSlug === 'custom-designs';
+    $isMadeToOrder = $catSlug === 'made-to-order';
     $isInStock     = $catSlug === 'in-stock';
 
     if (!$isInStock && !$isCustomSize && !$isMadeToOrder) {

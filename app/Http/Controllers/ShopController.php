@@ -41,8 +41,8 @@ class ShopController extends Controller
             'bestseller'    => $query->where('is_bestseller', true),
             'new'           => $query->where('is_new_arrival', true),
             'in_stock'      => $query->whereHas('category', fn($q) => $q->where('slug', 'in-stock')),
-            'made_to_order' => $query->whereHas('category', fn($q) => $q->where('slug', 'made-on-order')),
-            'custom_size'   => $query->whereHas('category', fn($q) => $q->where('slug', 'custom-size')),
+            'made_to_order' => $query->whereHas('category', fn($q) => $q->where('slug', 'made-to-order')),
+            'custom_size'   => $query->whereHas('category', fn($q) => $q->where('slug', 'custom-designs')),
             default         => null,
         };
 
@@ -151,10 +151,10 @@ class ShopController extends Controller
                     $q->orWhereHas('category', fn($c) => $c->where('slug', 'in-stock'));
                 }
                 if (in_array('Custom Size', $avail)) {
-                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'custom-size'));
+                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'custom-designs'));
                 }
                 if (in_array('Made to Order', $avail)) {
-                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'made-on-order'));
+                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'made-to-order'));
                 }
             });
         }
