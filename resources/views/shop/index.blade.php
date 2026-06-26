@@ -348,6 +348,20 @@
                     @endforeach
                     </div>
 
+                    {{-- Single Apply button for ALL filters (#2) --}}
+                    <div class="mt-6 flex flex-col gap-2">
+                        <button type="submit"
+                                class="w-full py-3 text-white transition-opacity hover:opacity-90"
+                                style="background:#121212; font-family:'Lusitana',serif; font-size:15px; border-radius:4px;">
+                            Apply Now
+                        </button>
+                        <a href="{{ route('shop.index') }}"
+                           class="w-full py-2 text-center hover:text-stone-900"
+                           style="font-family:'Lusitana',serif; font-size:13px; color:rgba(18,18,18,0.55);">
+                            Clear all
+                        </a>
+                    </div>
+
                 </form>
 
                 {{-- Auto-apply filters via AJAX — no full page refresh (#1) --}}
@@ -394,12 +408,10 @@
                             .catch(function () { window.location = url; });
                     }
 
-                    ff.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
-                        cb.addEventListener('change', function () { apply(); });
-                    });
+                    // Filters apply only when the user clicks "Apply Now" (no refetch on every change).
                     var sortSel = document.querySelector('select[name=sort]');
                     if (sortSel) sortSel.addEventListener('change', function () { apply(); });
-                    // Price range "Apply" (and any submit) → AJAX
+                    // "Apply Now" / any form submit → AJAX apply (all selected filters at once)
                     ff.addEventListener('submit', function (e) { e.preventDefault(); apply(); });
                     // Pagination links inside the results → AJAX (product links have no page=)
                     results.addEventListener('click', function (e) {
