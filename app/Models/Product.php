@@ -15,6 +15,7 @@ class Product extends Model
         'price', 'sale_price', 'category_id', 'stock', 'featured',
         'is_bestseller', 'is_new_arrival', 'status', 'material',
         'origin', 'dimensions', 'style', 'refined_color',
+        'construction', 'room_type', 'availability', 'size_category', 'use_type',
     ];
 
     protected $casts = [
@@ -80,6 +81,35 @@ class Product extends Model
         return $this->sale_price ?? $this->price;
     }
 
+    /**
+     * Display name = product name + its specific swatch colour, but only when the
+     * colour isn't already part of the name. This reads as "Aster Grove — Blue"
+     * for base-named products, and simply "Bowery Light Grey" for products that
+     * already carry the colour in their name. refined_color is deliberately ignored
+     * here because it holds the filter bucket (e.g. "Neutrals"), not the real colour.
+     */
+    public function getDisplayNameAttribute()
+    {
+        // Strip a trailing SKU code from the name (e.g. "Haven HV-134" -> "Haven",
+        // "Boho Plus 172505" -> "Boho Plus", "Lilah LL - 750" -> "Lilah").
+        $name = preg_replace('/\s+[A-Z]{2,3}\s*-?\s*\d{2,5}$/', '', $this->name);
+        $name = preg_replace('/\s+\d{4,6}$/', '', $name);
+        $name = trim($name, " -\t");
+        if ($name === '') {
+            $name = $this->name;
+        }
+
+        $colour = $this->relationLoaded('colors')
+            ? optional($this->colors->first())->color_name
+            : optional($this->colors()->first())->color_name;
+
+        if (empty($colour) || stripos($name, $colour) !== false) {
+            return $name;
+        }
+
+        return $name . ' — ' . $colour;
+    }
+
     public function getFormattedPriceAttribute()
     {
         return '$' . number_format($this->effective_price, 0);
@@ -98,7 +128,10 @@ class Product extends Model
             return route('media.show', ['path' => $first->path]);
         }
 
-        return asset('images/placeholder-rug.jpg');
+        // Neutral branded placeholder (1.5 KB SVG). Deliberately NOT the cover
+        // photo — showing a styled room shot for a product with no photography
+        // misrepresents the product and ships 1.6 MB per card.
+        return asset('images/placeholder-rug.svg');
     }
 
     /**

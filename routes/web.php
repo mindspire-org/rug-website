@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\FilterController as AdminFilterController;
 use App\Http\Controllers\Admin\ZipPriceController as AdminZipPriceController;
 use App\Http\Controllers\Admin\TradeAccountController;
+use App\Http\Controllers\Admin\TradeProjectController;
 use App\Http\Controllers\Admin\SubmissionController;
 use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\TradePortalController;
@@ -51,7 +52,12 @@ Route::post('/contact', [PageController::class, 'contactSubmit'])->name('contact
 Route::get('/weave', [PageController::class, 'weave'])->name('weave');
 Route::post('/weave', [PageController::class, 'weaveSubmit'])->name('weave.submit');
 Route::get('/trade', [PageController::class, 'trade'])->name('trade');
+Route::post('/trade/apply', [PageController::class, 'tradeApply'])->name('trade.apply');
 Route::get('/services', [PageController::class, 'services'])->name('services');
+Route::get('/privacy', fn () => view('pages.privacy'))->name('privacy');
+Route::get('/terms', fn () => view('pages.terms'))->name('terms');
+Route::get('/thank-you', fn () => view('pages.thank-you'))->name('thank-you');
+Route::get('/shipping-quote', [PageController::class, 'shippingQuote'])->name('shipping.quote');
 
 // Cart
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -68,6 +74,7 @@ Route::post('/products/{product}/estimate/email', [EstimateController::class, 'e
 Route::post('/products/{product}/estimate/save', [EstimateController::class, 'save'])->name('estimate.save');
 Route::post('/products/{product}/room-visualize', [RoomVisualizationController::class, 'store'])->name('room.visualize');
 Route::get('/room-visualizations', [RoomVisualizationController::class, 'history'])->name('room.visualizations');
+Route::get('/room-visualizations/{visualization}/download', [RoomVisualizationController::class, 'download'])->name('room.visualization.download');
 Route::post('/products/{product}/sample-request', [\App\Http\Controllers\SampleRequestController::class, 'createFromProduct'])->name('sample.request.product');
 Route::post('/sample-requests', [\App\Http\Controllers\SampleRequestController::class, 'store'])->name('sample.request.store');
 
@@ -144,6 +151,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:sanctum', config('jets
     Route::get('/trade-accounts', [TradeAccountController::class, 'index'])->name('trade-accounts.index');
     Route::put('/trade-accounts/{user}', [TradeAccountController::class, 'update'])->name('trade-accounts.update');
     Route::patch('/trade-accounts/{user}/toggle', [TradeAccountController::class, 'toggleTrade'])->name('trade-accounts.toggle');
+
+    // Trade Projects — admin assigns projects to trade accounts
+    Route::get('/trade-projects', [TradeProjectController::class, 'index'])->name('trade-projects.index');
+    Route::post('/trade-projects', [TradeProjectController::class, 'store'])->name('trade-projects.store');
+    Route::put('/trade-projects/{tradeProject}', [TradeProjectController::class, 'update'])->name('trade-projects.update');
+    Route::delete('/trade-projects/{tradeProject}', [TradeProjectController::class, 'destroy'])->name('trade-projects.destroy');
 
     // Submissions
     Route::get('/submissions/estimates', [SubmissionController::class, 'estimates'])->name('submissions.estimates');

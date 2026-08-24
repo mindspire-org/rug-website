@@ -18,6 +18,12 @@
     <meta name="twitter:image" content="@yield('og_image', asset('images/cover.jpg'))">
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16.png') }}">
+    <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#111111">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lusitana:wght@400;700&display=swap" rel="stylesheet">
@@ -136,7 +142,7 @@
                     <input type="checkbox" x-model="agreed" class="mt-0.5 flex-shrink-0" style="width:16px; height:16px; accent-color:#121212; cursor:pointer;">
                     <span style="font-size:13px; color:rgba(18,18,18,0.7); line-height:1.5;">
                         By signing up, you agree to our
-                        <a href="#" style="color:#121212; font-weight:600; text-decoration:none; border-bottom:1px solid rgba(18,18,18,0.3);">Terms &amp; Conditions</a>
+                        <a href="{{ route('terms') }}" target="_blank" style="color:#121212; font-weight:600; text-decoration:none; border-bottom:1px solid rgba(18,18,18,0.3);">Terms &amp; Conditions</a>
                     </span>
                 </label>
 
@@ -175,10 +181,15 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-[54px] md:h-[60px]">
 
-            {{-- Logo --}}
-            <a href="{{ route('home') }}" class="flex-shrink-0">
-                <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet — Since 1886" style="height:42px; width:auto; display:block;">
-            </a>
+            {{-- Menu (mobile) + Logo --}}
+            <div class="flex items-center gap-3">
+                <button @click="mobileOpen = true" class="md:hidden text-white/90 hover:text-white -ml-1 p-1" aria-label="Open menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <a href="{{ route('home') }}" class="flex-shrink-0">
+                    <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet — Since 1886" style="height:42px; width:auto; display:block;">
+                </a>
+            </div>
 
             {{-- Desktop Nav --}}
             <nav class="hidden md:flex items-center gap-8">
@@ -263,6 +274,52 @@
     </div>
 </header>
 
+{{-- ── MOBILE NAV DRAWER (matches desktop nav) ── --}}
+<style>
+    .cc-navoverlay { position:fixed; inset:0; z-index:70; background:rgba(0,0,0,0.5); display:none; }
+    .cc-navoverlay.cc-navopen { display:block; }
+    .cc-navdrawer { position:fixed; top:0; left:0; bottom:0; z-index:71; width:82%; max-width:320px; background:#111111; overflow-y:auto; box-shadow:2px 0 18px rgba(0,0,0,0.4); display:none; }
+    .cc-navdrawer.cc-navopen { display:block; }
+    @media (min-width:768px) { .cc-navoverlay, .cc-navdrawer { display:none !important; } }
+</style>
+<div class="md:hidden">
+    {{-- Overlay --}}
+    <div class="cc-navoverlay" :class="mobileOpen ? 'cc-navopen' : ''" @click="mobileOpen = false"></div>
+    {{-- Panel --}}
+    <div class="cc-navdrawer" :class="mobileOpen ? 'cc-navopen' : ''">
+        <div class="flex items-center justify-between px-5 h-[54px] border-b border-white/10">
+            <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan" style="height:34px; width:auto;">
+            <button @click="mobileOpen = false" class="text-white/80 hover:text-white p-1" aria-label="Close menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <nav class="flex flex-col py-3">
+            <a href="{{ route('shop.index') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Our Collection</a>
+            <a href="{{ route('weave') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Weave Your Dream Rug</a>
+            <a href="{{ route('about') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">About</a>
+            @auth
+            <a href="{{ route('trade.portal.dashboard') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Trade Portal</a>
+            @else
+            <a href="{{ route('trade') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Trade</a>
+            @endauth
+            <a href="{{ Auth::check() ? route('wishlist.index') : route('login') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Wishlist</a>
+            <a href="{{ route('cart.index') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Cart</a>
+            @auth
+            <a href="{{ route('dashboard') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">My Account</a>
+            <a href="{{ route('dashboard.orders') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">My Orders</a>
+            @if(Auth::user()->isAdmin())
+            <a href="{{ route('admin.dashboard') }}" class="px-5 py-3.5 text-[15px] text-amber-400 hover:bg-white/5 border-b border-white/5">Admin Panel</a>
+            @endif
+            <form method="POST" action="{{ route('logout') }}">@csrf
+                <button type="submit" class="w-full text-left px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5">Logout</button>
+            </form>
+            @else
+            <a href="{{ route('login') }}" class="mx-5 mt-3 text-center text-stone-900 font-medium text-[15px] py-3" style="background:#E8651A; border-radius:4px;">Log In / Sign Up</a>
+            @endauth
+        </nav>
+    </div>
+</div>
+
 {{-- Page Content --}}
 <main>
     @yield('content')
@@ -284,15 +341,15 @@
                 <p class="text-[11px] text-stone-500 uppercase tracking-widest mb-3">Connect With Us</p>
                 <div class="flex items-center gap-2 mb-7">
                     {{-- Facebook --}}
-                    <a href="#" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
+                    <a href="https://www.facebook.com/people/Costikyan-Custom-Carpet/61584537811008/" target="_blank" rel="noopener" aria-label="Facebook" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
                         <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                     </a>
                     {{-- Instagram --}}
-                    <a href="#" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
+                    <a href="https://www.instagram.com/costikyancustomcarpet" target="_blank" rel="noopener" aria-label="Instagram" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                     </a>
                     {{-- YouTube --}}
-                    <a href="#" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
+                    <a href="https://www.youtube.com/@CostikyanCustom" target="_blank" rel="noopener" aria-label="YouTube" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
                         <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>
                     </a>
                 </div>
@@ -302,11 +359,18 @@
                 <div class="space-y-2">
                     <div class="flex items-center gap-2.5 text-[13px] text-stone-400">
                         <svg class="w-3.5 h-3.5 text-stone-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                        <span>800-247-7847</span>
+                        <a href="tel:+18002477847" class="hover:text-white transition-colors">800-247-7847</a>
                     </div>
                     <div class="flex items-center gap-2.5 text-[13px] text-stone-400">
                         <svg class="w-3.5 h-3.5 text-stone-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg>
-                        <span>info@costikyancustomcarpet.com</span>
+                        <a href="mailto:info@costikyancustomcarpet.com" class="hover:text-white transition-colors">info@costikyancustomcarpet.com</a>
+                    </div>
+                    <div class="flex items-start gap-2.5 text-[13px] text-stone-400">
+                        <svg class="w-3.5 h-3.5 text-stone-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+                        <a href="https://maps.google.com/?q=37-11+48th+Avenue,+Long+Island+City,+NY+11101"
+                           target="_blank" rel="noopener" class="hover:text-white transition-colors">
+                            37-11 48th Avenue<br>Long Island City, NY 11101
+                        </a>
                     </div>
                 </div>
             </div>
@@ -361,8 +425,8 @@
         <div class="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-3">
             <p class="text-[12px] text-stone-600">© {{ date('Y') }} Costikyan Custom Carpet · Est. 1886</p>
             <div class="flex gap-7">
-                <a href="#" class="text-[12px] text-stone-600 hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" class="text-[12px] text-stone-600 hover:text-white transition-colors">Terms of Service</a>
+                <a href="{{ route('privacy') }}" class="text-[12px] text-stone-600 hover:text-white transition-colors">Privacy Policy</a>
+                <a href="{{ route('terms') }}" class="text-[12px] text-stone-600 hover:text-white transition-colors">Terms of Service</a>
             </div>
         </div>
     </div>

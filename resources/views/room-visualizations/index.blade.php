@@ -41,7 +41,7 @@
                     <div class="flex items-center justify-between mt-1">
                         <p class="text-[11px] text-stone-400">{{ $viz->created_at->format('M j, Y') }}</p>
                         @if($viz->status === 'completed' && $viz->generated_image_url)
-                        <a href="{{ $viz->generated_image_url }}" download="room-visualization.png"
+                        <a href="{{ route('room.visualization.download', $viz) }}"
                            class="text-[11px] font-medium" style="color:#E8651A;">Download</a>
                         @elseif($viz->product)
                         <a href="{{ route('shop.show', $viz->product->slug ?? $viz->product->id) }}"

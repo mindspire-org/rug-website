@@ -98,6 +98,35 @@ class RoomVisualizationController extends Controller
         return back()->with('error', $result['error']);
     }
 
+    /**
+     * Stream a generated visualization back as a file attachment. The bare
+     * `download` attribute on an <a> is ignored for cross-origin URLs and the
+     * /storage/ path 404s when the symlink is missing, so serve it explicitly.
+     */
+    public function download(RoomVisualization $visualization)
+    {
+        if (!Auth::check() || $visualization->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if (!$visualization->generated_image_path) {
+            abort(404);
+        }
+
+        $candidates = [
+            storage_path('app/public/' . $visualization->generated_image_path),
+            public_path('storage/' . $visualization->generated_image_path),
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return response()->download($path, 'costikyan-room-visualization-' . $visualization->id . '.png');
+            }
+        }
+
+        abort(404);
+    }
+
     public function history()
     {
         if (!Auth::check()) {

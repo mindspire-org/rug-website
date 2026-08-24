@@ -25,3 +25,20 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Deployment credentials & local diagnostics — never commit
+.env.hostinger
+env-production-template.txt
+ssh_helper.php
+ssh_pass.bat
+ssh_result.txt
+ssh1.php
+ssh2.php
+ssh_ref.php
+ssh_ref_dl.php
+phpinfo.php
+vendor.zip
+costikyan-deploy-*/
+costikyan-deploy-*.zip
+check_result.txt
+nul

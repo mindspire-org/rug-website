@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') | Costikyan</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/favicon.svg') }}">
+    <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#111111">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lusitana:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -28,7 +33,8 @@
         {{-- Logo --}}
         <div class="flex items-center justify-between px-5 py-5 border-b border-stone-100">
             <a href="{{ route('home') }}" class="block">
-                <span style="font-family:'Lusitana',serif; font-size:18px; font-weight:700; color:#121212; letter-spacing:0.04em;">COSTIKYAN</span>
+                <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet"
+                     style="height:34px; width:auto; display:block;">
             </a>
             <button @click="sidebarOpen = false" class="lg:hidden text-stone-400 hover:text-stone-800">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>

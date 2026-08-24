@@ -122,7 +122,8 @@ class AiImageService
             return [
                 'success' => true,
                 'path' => $filename,
-                'url' => asset('storage/' . $filename),
+                // /media/{path} rather than /storage/{path}: works without the symlink.
+                'url' => route('media.show', ['path' => $filename]),
             ];
 
         } catch (\Throwable $e) {

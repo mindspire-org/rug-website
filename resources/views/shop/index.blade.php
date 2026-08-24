@@ -27,24 +27,44 @@
 </div>
 
 {{-- ── TAB ROW — separated bar with border top+bottom, white bg ── --}}
+<style>
+    /* Desktop: single 68px row, tabs left / sort right. */
+    .cc-tabbar     { display:flex; align-items:center; justify-content:space-between; gap:24px; height:68px; }
+    .cc-tabs       { display:flex; align-items:center; gap:32px; }
+    .cc-tab        { font-family:'Lusitana',serif; font-size:16px; line-height:21px; white-space:nowrap; }
+    .cc-sortwrap   { flex-shrink:0; }
+    /* Mobile: tabs wrap onto their own lines as tappable pills and the sort
+       control goes full-width underneath, so nothing is hidden off-screen. */
+    @media (max-width: 767px) {
+        .cc-tabbar   { display:block; height:auto; padding:14px 0; }
+        .cc-tabs     { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+        .cc-tab      { display:flex; align-items:center; justify-content:center; text-align:center;
+                       white-space:normal; font-size:14px; line-height:1.25; min-height:42px; padding:8px 10px;
+                       border:1px solid rgba(18,18,18,0.15); border-radius:4px; }
+        .cc-tab-on   { background:#121212; border-color:#121212; color:#fff !important; }
+        .cc-sortwrap { margin-top:10px; }
+        .cc-sortwrap > div { width:100% !important; }
+    }
+</style>
 <div class="bg-white" style="border-top:1px solid rgba(18,18,18,0.08); border-bottom:1px solid rgba(18,18,18,0.08);">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
-        <div class="flex items-center justify-between gap-6" style="height:68px;">
+        <div class="cc-tabbar">
 
             {{-- Tabs ── --}}
-            <div class="flex items-center gap-8">
+            <div class="cc-tabs">
                 @foreach([
                     ['all',         'All'],
                     ['signature',   'Signature Items'],
                     ['bestseller',  'Best Sellers'],
                     ['new',         'New Arrivals'],
                     ['in_stock',    'In Stock'],
-                    ['made_to_order','Made to Order'],
-                    ['custom_size', 'Custom Size'],
+                    ['made_to_order','Custom Size'],
+                    ['custom_size', 'Fully Custom'],
                 ] as [$val, $label])
+                @php $isTabOn = request('tab','all') === $val; @endphp
                 <a href="{{ route('shop.index', array_merge(request()->except('tab'), ['tab' => $val])) }}"
-                   style="font-family:'Lusitana',serif; font-size:16px; line-height:21px; white-space:nowrap;
-                          {{ request('tab','all') === $val
+                   class="cc-tab {{ $isTabOn ? 'cc-tab-on' : '' }}"
+                   style="{{ $isTabOn
                              ? 'font-weight:700; color:#121212;'
                              : 'font-weight:400; color:rgba(18,18,18,0.6);' }}">
                     {{ $label }}
@@ -53,7 +73,7 @@
             </div>
 
             {{-- Sort Dropdown ── --}}
-            <form method="GET" action="{{ route('shop.index') }}" class="flex-shrink-0">
+            <form method="GET" action="{{ route('shop.index') }}" class="cc-sortwrap">
                 @foreach(request()->except('sort') as $k => $v)
                     @if(is_array($v))
                         @foreach($v as $item)
@@ -86,19 +106,60 @@
 </div>
 
 {{-- ── BODY: SIDEBAR + GRID ── --}}
-<div class="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+<style>
+    .cc-filter-aside { width:310px; }
+    .cc-mobile-filter-bar { display:none; }
+    .cc-filter-close { display:none; }
+    @media (max-width: 767px) {
+        .cc-mobile-filter-bar { display:flex; }
+        .cc-filter-close { display:flex; }
+        .cc-filter-aside { position:fixed; inset:0; z-index:60; width:auto; background:#fff; overflow-y:auto; padding:16px; display:none; }
+        .cc-filter-aside.cc-open { display:block; }
+        body.cc-noscroll { overflow:hidden; }
+    }
+</style>
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-10" x-data="{ mobileFiltersOpen: false }"
+     x-effect="document.body.classList.toggle('cc-noscroll', mobileFiltersOpen)">
+
+    {{-- Mobile: open-filters button --}}
+    <div class="cc-mobile-filter-bar items-center justify-between mb-5">
+        <button type="button" @click="mobileFiltersOpen = true"
+                class="inline-flex items-center gap-2 px-4 py-2.5"
+                style="border:1px solid rgba(18,18,18,0.2); border-radius:4px; font-family:'Lusitana',serif; font-size:14px; color:#121212;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M6 10h12M10 16h4"/></svg>
+            Filters &amp; Refine
+        </button>
+    </div>
+
     <div class="flex gap-10">
 
         {{-- ── LEFT SIDEBAR: REFINE ──
              Figma: bg #F9F9F9, border rgba(18,18,18,0.05), shadow, border-radius 4px,
              padding 30px, gap 50px, width 310px ── --}}
-        <aside class="hidden md:block flex-shrink-0"
-               style="width:310px"
-               x-data="{
-                   color:false, pattern:false, material:false,
-                   room:false, construction:false, size:false,
-                   availability:false, budget:false
-               }">
+        @php
+        $anyFilter = request('color') || request('pattern') || request('material') || request('use') || request('construction') || request('size') || request('availability') || request('min_price') || request('max_price');
+        $openState = [
+            'color' => request('color') ? true : (!$anyFilter ? true : false),
+            'pattern' => request('pattern') ? true : false,
+            'material' => request('material') ? true : false,
+            'use' => request('use') ? true : false,
+            'construction' => request('construction') ? true : false,
+            'size' => request('size') ? true : false,
+            'availability' => request('availability') ? true : false,
+            'budget' => request('min_price') || request('max_price') ? true : false,
+        ];
+        @endphp
+        <aside class="cc-filter-aside flex-shrink-0"
+               :class="mobileFiltersOpen ? 'cc-open' : ''"
+               x-data='@json($openState)'>
+            {{-- Mobile: close-filters bar --}}
+            <div class="cc-filter-close items-center justify-between mb-4">
+                <span style="font-family:'Lusitana',serif; font-size:22px; font-weight:700; color:#171717;">Refine</span>
+                <button type="button" @click="mobileFiltersOpen = false" aria-label="Close filters"
+                        style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(18,18,18,0.15); border-radius:50%;">
+                    <svg width="18" height="18" fill="none" stroke="#121212" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
             <div style="background:#F9F9F9; border:1px solid rgba(18,18,18,0.05);
                         box-shadow:0px 4px 8px rgba(10,13,18,0.02), 0px 2px 4px -2px rgba(10,13,18,0.02);
                         border-radius:4px; padding:30px;">
@@ -115,6 +176,8 @@
                     #filter-form input[name="color[]"]:checked + span { box-shadow:0 0 0 2px #fff, 0 0 0 3px #121212 !important; }
                     /* Keyboard focus accessibility */
                     #filter-form input:focus-visible + span { outline:2px solid #E8651A; outline-offset:2px; }
+                    /* Apply bar at the bottom of the sidebar */
+                    .cc-apply-bar { padding:20px 0 0; margin-top:10px; background:#F9F9F9; border-top:1px solid rgba(18,18,18,0.08); }
                 </style>
                 <form method="GET" action="{{ route('shop.index') }}" id="filter-form">
                     @if(request('tab'))  <input type="hidden" name="tab"  value="{{ request('tab') }}">  @endif
@@ -142,22 +205,37 @@
                         ['key'=>'color',        'label'=>'REFINED COLOR',          'open'=>'color'],
                         ['key'=>'pattern',      'label'=>'PATTERN / STYLE',        'open'=>'pattern'],
                         ['key'=>'material',     'label'=>'MATERIAL',               'open'=>'material'],
+                        ['key'=>'use',          'label'=>'USE',                    'open'=>'use'],
                         ['key'=>'construction', 'label'=>'CONSTRUCTION',           'open'=>'construction'],
                         ['key'=>'size',         'label'=>'SIZE',                   'open'=>'size'],
                         ['key'=>'availability', 'label'=>'AVAILABILITY / TIMELINE','open'=>'availability'],
                         ['key'=>'budget',       'label'=>'BUDGET',                 'open'=>'budget'],
                     ];
+                    $selectedCounts = [
+                        'color' => count((array) request('color', [])),
+                        'pattern' => count((array) request('pattern', [])),
+                        'material' => count((array) request('material', [])),
+                        'use' => count((array) request('use', [])),
+                        'construction' => count((array) request('construction', [])),
+                        'size' => count((array) request('size', [])),
+                        'availability' => count((array) request('availability', [])),
+                        'budget' => (request('min_price') || request('max_price')) ? 1 : 0,
+                    ];
                     @endphp
 
                     <div class="flex flex-col gap-6">
                     @foreach($filterSections as $section)
-                    <div style="border-bottom:1px solid rgba(18,18,18,0.1); padding-bottom:20px;">
+                    <div style="border-bottom:1px solid rgba(18,18,18,0.1); padding-bottom:20px;" data-section-key="{{ $section['key'] }}">
                         <button type="button"
                                 @click="{{ $section['open'] }} = !{{ $section['open'] }}"
                                 class="flex items-center justify-between w-full text-left">
                             <span style="font-family:'Lusitana',serif; font-size:15px; line-height:19px;
                                          font-weight:400; text-transform:uppercase; color:#121212;">
                                 {{ $section['label'] }}
+                                <span class="cc-filter-badge"
+                                      style="display:{{ $selectedCounts[$section['key']] > 0 ? 'inline-flex' : 'none' }}; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; margin-left:6px; background:#121212; color:#fff; font-family:'Inter',sans-serif; font-size:10px; font-weight:600; border-radius:9px; vertical-align:middle; text-transform:none;">
+                                    {{ $selectedCounts[$section['key']] }}
+                                </span>
                             </span>
                             <svg class="transition-transform duration-200 flex-shrink-0"
                                  :class="{{ $section['open'] }} ? 'rotate-180' : ''"
@@ -176,14 +254,15 @@
                             ['hex'=>'#000000','name'=>'Black'],
                         ];
                         $fo_pattern      = $filterOptions['pattern']      ?? ['Solid','Stripe','Grid','Geometric','Abstract','Classic & Ornate'];
-                        $fo_material     = $filterOptions['material']     ?? ['Wool','Wool & Silk','Natural Fibers','Silk','Performance Fibers'];
+                        $fo_material     = $filterOptions['material']     ?? ['Wool','Wool and Synthetic Blend','Silk','Silk and Wool','Nylon','Solution Dyed Nylon','Sisal/Plant Fibers','Solution-Dyed Acrylic','Polypropylene'];
+                        $fo_use          = $filterOptions['use']          ?? ['Indoor','Indoor/Outdoor','Outdoor','Commercial'];
                         $fo_room         = $filterOptions['room']         ?? ['Living Room','Bedroom','Dining Room','Hallway','Office','Outdoor','Staircase'];
                         $fo_construction = $filterOptions['construction'] ?? ['Hand-Knotted','Hand-Tufted','Flatweave','Machine Made','Hand-Loomed','Hooked'];
                         $fo_size         = $filterOptions['size']         ?? ['6×9','8×10','9×12','10×14','12×15','Custom'];
                         $fo_avail        = $filterOptions['availability'] ?? [
                             ['value'=>'In Stock',      'label'=>'In Stock (2 Weeks)'],
                             ['value'=>'Custom Size',   'label'=>'Custom Size (2-4 weeks)'],
-                            ['value'=>'Made to Order', 'label'=>'Made to Order (8-12 weeks)'],
+                            ['value'=>'Fully Custom',  'label'=>'Fully Custom (8-12 weeks)'],
                         ];
                         @endphp
 
@@ -232,6 +311,22 @@
                                               style="border:1px solid rgba(18,18,18,0.25);
                                                      font-family:'Lusitana',serif; font-size:13px; color:#121212;">
                                             {{ $mat }}
+                                        </span>
+                                    </label>
+                                    @endforeach
+                                </div>
+
+                            @elseif($section['key'] === 'use')
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($fo_use as $opt)
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" name="use[]" value="{{ $opt }}"
+                                               {{ in_array($opt,(array)request('use',[])) ? 'checked' : '' }}
+                                               class="sr-only peer">
+                                        <span class="cc-fopt cc-pill inline-block px-3 py-1.5 rounded-full peer-checked:bg-[#121212] peer-checked:text-white transition-colors"
+                                              style="border:1px solid rgba(18,18,18,0.25);
+                                                     font-family:'Lusitana',serif; font-size:13px; color:#121212;">
+                                            {{ $opt }}
                                         </span>
                                     </label>
                                     @endforeach
@@ -336,10 +431,6 @@
                                                      font-family:'Lusitana',serif; font-size:14px; color:#121212;"
                                               x-text="'$' + maxVal.toLocaleString()"></span>
                                     </div>
-                                    <button type="submit" class="w-full py-2 text-white mt-3"
-                                            style="background:#121212; font-family:'Lusitana',serif; font-size:14px; border-radius:4px;">
-                                        Apply
-                                    </button>
                                 </div>
 
                             @endif
@@ -348,15 +439,15 @@
                     @endforeach
                     </div>
 
-                    {{-- Single Apply button for ALL filters (#2) --}}
-                    <div class="mt-6 flex flex-col gap-2">
-                        <button type="submit"
+                    {{-- Sticky Apply bar at the bottom of the sidebar (outside all filter sections) --}}
+                    <div class="cc-apply-bar">
+                        <button type="submit" @click="mobileFiltersOpen = false"
                                 class="w-full py-3 text-white transition-opacity hover:opacity-90"
-                                style="background:#121212; font-family:'Lusitana',serif; font-size:15px; border-radius:4px;">
+                                style="background:#121212; font-family:'Lusitana',serif; font-size:15px; border-radius:4px; cursor:pointer;">
                             Apply Now
                         </button>
                         <a href="{{ route('shop.index') }}"
-                           class="w-full py-2 text-center hover:text-stone-900"
+                           class="w-full py-2 text-center block hover:text-stone-900"
                            style="font-family:'Lusitana',serif; font-size:13px; color:rgba(18,18,18,0.55);">
                             Clear all
                         </a>
@@ -408,11 +499,38 @@
                             .catch(function () { window.location = url; });
                     }
 
+                    // Live update section badges so users see how many filters are selected per section.
+                    function updateBadges() {
+                        var sections = ff.querySelectorAll('[data-section-key]');
+                        sections.forEach(function (sec) {
+                            var key = sec.getAttribute('data-section-key');
+                            var badge = sec.querySelector('.cc-filter-badge');
+                            if (!badge) return;
+                            var count = 0;
+                            if (key === 'budget') {
+                                var minP = ff.querySelector('input[name="min_price"]');
+                                var maxP = ff.querySelector('input[name="max_price"]');
+                                var minVal = minP ? parseInt(minP.value, 10) : 0;
+                                var maxVal = maxP ? parseInt(maxP.value, 10) : 15000;
+                                count = (minVal > 0 || maxVal < 15000) ? 1 : 0;
+                            } else {
+                                count = sec.querySelectorAll('input[name="' + key + '[]"]:checked').length;
+                            }
+                            badge.textContent = count;
+                            badge.style.display = count > 0 ? 'inline-flex' : 'none';
+                        });
+                    }
+                    ff.querySelectorAll('input[type=checkbox], input[type=range]').forEach(function (input) {
+                        input.addEventListener('change', updateBadges);
+                    });
+                    // Update badges once on load (in case of browser back/forward)
+                    updateBadges();
+
                     // Filters apply only when the user clicks "Apply Now" (no refetch on every change).
                     var sortSel = document.querySelector('select[name=sort]');
                     if (sortSel) sortSel.addEventListener('change', function () { apply(); });
                     // "Apply Now" / any form submit → AJAX apply (all selected filters at once)
-                    ff.addEventListener('submit', function (e) { e.preventDefault(); apply(); });
+                    ff.addEventListener('submit', function (e) { e.preventDefault(); updateBadges(); apply(); });
                     // Pagination links inside the results → AJAX (product links have no page=)
                     results.addEventListener('click', function (e) {
                         var a = e.target.closest('a[href*="page="]');
