@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] { display: none; }
+
+@layer base {
+    html { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .font-serif { font-family: 'Playfair Display', serif; }
+    body { @apply text-stone-900 bg-white; }
+}
+
+@layer components {
+    /* Buttons */
+    .btn-gold {
+        @apply inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-stone-900 font-medium px-6 py-3 transition-colors duration-200;
+    }
+    .btn-outline-white {
+        @apply inline-flex items-center gap-2 border border-white text-white hover:bg-white hover:text-stone-900 font-medium px-6 py-3 transition-colors duration-200;
+    }
+    .btn-outline-dark {
+        @apply inline-flex items-center gap-2 border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white font-medium px-6 py-3 transition-colors duration-200;
+    }
+    .btn-dark {
+        @apply inline-flex items-center gap-2 bg-stone-900 hover:bg-stone-800 text-white font-medium px-6 py-3 transition-colors duration-200;
+    }
+
+    /* Nav link */
+    .nav-link {
+        @apply text-sm font-medium text-stone-700 hover:text-stone-900 transition-colors duration-150;
+    }
+    .nav-link-light {
+        @apply text-sm font-medium text-stone-200 hover:text-white transition-colors duration-150;
+    }
+
+    /* Product card */
+    .product-card {
+        @apply cursor-pointer;
+    }
+    .product-card-img {
+        @apply w-full aspect-square bg-stone-100 overflow-hidden;
+    }
+    .product-card-img img {
+        @apply w-full h-full object-cover transition-transform duration-500;
+    }
+
+    /* Section headings */
+    .section-title {
+        @apply font-serif text-3xl md:text-4xl font-bold text-stone-900;
+    }
+    .section-subtitle {
+        @apply text-stone-500 text-sm mt-2;
+    }
+
+    /* Form inputs */
+    .form-input {
+        @apply w-full border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900 transition-colors;
+    }
+    .form-label {
+        @apply block text-xs font-medium text-stone-600 uppercase tracking-wide mb-1;
+    }
+
+    /* Admin sidebar */
+    .admin-nav-link {
+        @apply flex items-center gap-3 px-4 py-2.5 text-sm text-stone-400 hover:text-white hover:bg-stone-700 rounded transition-colors duration-150;
+    }
+    .admin-nav-link.active {
+        @apply text-white bg-stone-700;
+    }
+
+    /* Badge */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full;
+    }
+
+    /* Color swatch */
+    .color-swatch {
+        @apply w-4 h-4 rounded-full border border-white ring-1 ring-stone-300 cursor-pointer hover:ring-stone-600 transition;
+    }
+    .color-swatch.selected {
+        @apply ring-stone-900 ring-2;
+    }
+
+    /* Tab */
+    .tab-btn {
+        @apply text-base font-medium text-stone-400 hover:text-stone-900 pb-1 border-b-2 border-transparent hover:border-stone-900 transition-all duration-150 whitespace-nowrap;
+    }
+    .tab-btn.active {
+        @apply text-stone-900 border-stone-900;
+    }
+
+    /* Range slider thumb — budget filter */
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #121212;
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 0 1px #121212;
+        margin-top: -7px;
+    }
+    input[type=range]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #121212;
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 0 1px #121212;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+        height: 2px;
+        background: transparent;
+    }
+    input[type=range]:focus {
+        outline: none;
+    }
+}
