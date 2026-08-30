@@ -36,4 +36,37 @@ class ZipPrice extends Model
 
         return $match ? (float) $match->price : null;
     }
+
+    /**
+     * Best-effort estimate for a ZIP that falls outside every configured range.
+     * Returns the price of the numerically closest range so the customer always
+     * gets a real figure (marked "estimated") instead of a dead "no rate" message.
+     */
+    public static function nearest(?string $zip): ?float
+    {
+        if (!$zip) {
+            return null;
+        }
+        $z = (int) preg_replace('/\D/', '', substr($zip, 0, 5));
+        if ($z <= 0) {
+            return null;
+        }
+
+        $best = null;
+        $bestDist = PHP_INT_MAX;
+        foreach (static::where('active', true)->get() as $r) {
+            $start = (int) $r->zip_start;
+            $end   = (int) $r->zip_end;
+            if ($z >= $start && $z <= $end) {
+                return (float) $r->price;
+            }
+            $dist = min(abs($z - $start), abs($z - $end));
+            if ($dist < $bestDist) {
+                $bestDist = $dist;
+                $best = (float) $r->price;
+            }
+        }
+
+        return $best;
+    }
 }

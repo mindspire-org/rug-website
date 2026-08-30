@@ -1,0 +1,39 @@
+# Hostinger Root .htaccess — routes all traffic to Laravel's public/ folder
+# Place this file in public_html/ (NOT inside public/)
+
+# ── 1. Disable LiteSpeed cache completely ──
+<IfModule LiteSpeed>
+    CacheDisable public /
+    CacheDisable private /
+</IfModule>
+
+# ── 2. Route everything to public/ ──
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Force HTTPS
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Serve existing files/directories from public/
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -d
+    RewriteRule ^(.*)$ /public/$1 [L]
+
+    # Everything else → public/index.php
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/index.php [L]
+</IfModule>
+
+# ── 3. Prevent caching of error pages ──
+<IfModule mod_headers.c>
+    Header always set Cache-Control "no-store, no-cache, must-revalidate" "expr=%{RESPONSE_STATUS} >= 400"
+</IfModule>
+
+# ── 4. PHP settings ──
+<IfModule php_module>
+    php_value memory_limit 256M
+    php_value max_execution_time 60
+</IfModule>

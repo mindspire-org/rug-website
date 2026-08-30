@@ -152,12 +152,12 @@ if (old('color_names')) {
                     </select>
                 </div>
                 <div>
-                    <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Material</label>
+                    <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Material <span style="color:#9ca3af;font-weight:400;">(filter)</span></label>
                     <select name="material"
                             class="w-full px-4 py-2.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-100 transition-all"
                             style="color:#0f172a;">
                         <option value="">— Select material —</option>
-                        @foreach(['Wool','Wool & Silk','Silk','Natural Fibers','Performance Fibers'] as $opt)
+                        @foreach($filterOptions['material'] as $opt)
                         <option value="{{ $opt }}" {{ old('material', $product->material ?? '') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                         @endforeach
                     </select>
@@ -177,12 +177,12 @@ if (old('color_names')) {
                            placeholder="e.g. 8' × 10'">
                 </div>
                 <div>
-                    <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Style / Pattern</label>
+                    <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Style / Pattern <span style="color:#9ca3af;font-weight:400;">(filter)</span></label>
                     <select name="style"
                             class="w-full px-4 py-2.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-100 transition-all"
                             style="color:#0f172a;">
                         <option value="">— Select pattern —</option>
-                        @foreach(['Solid','Stripe','Grid','Geometric','Abstract','Classic & Ornate','Floral','Traditional','Modern'] as $opt)
+                        @foreach($filterOptions['pattern'] as $opt)
                         <option value="{{ $opt }}" {{ old('style', $product->style ?? '') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                         @endforeach
                     </select>
@@ -193,13 +193,68 @@ if (old('color_names')) {
                             class="w-full px-4 py-2.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-100 transition-all"
                             style="color:#0f172a;">
                         <option value="">— Select refined colour —</option>
-                        @foreach(['Neutrals','Blues','Reds','Greens','Warm Tones','Cool Tones','Yellow','Black'] as $opt)
-                        <option value="{{ $opt }}" {{ old('refined_color', $product->refined_color ?? '') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                        @foreach($filterOptions['color'] as $co)
+                        <option value="{{ $co['name'] }}" {{ old('refined_color', $product->refined_color ?? '') === $co['name'] ? 'selected' : '' }}>{{ $co['name'] }}</option>
                         @endforeach
                     </select>
-                    <p style="font-size:11px; color:#9ca3af; margin-top:4px;">Closest of the 8 filter colours. Used for the shop filter only — the product page still shows the full colour list with exact names.</p>
+                    <p style="font-size:11px; color:#9ca3af; margin-top:4px;">Closest filter colour. Used for the shop filter only — the product page still shows the full colour list with exact names. <a href="{{ route('admin.filters.index') }}" style="color:#E8651A; text-decoration:underline;">Manage colors →</a></p>
+                </div>
+                <div>
+                    <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Construction <span style="color:#9ca3af;font-weight:400;">(filter)</span></label>
+                    <select name="construction"
+                            class="w-full px-4 py-2.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-100 transition-all bg-white"
+                            style="color:#0f172a;">
+                        <option value="">— Select construction —</option>
+                        @foreach($filterOptions['construction'] as $opt)
+                        <option value="{{ $opt }}" {{ old('construction', $product->construction ?? '') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
+        </div>
+
+        {{-- Section: Shop Filters (linked from /admin/filters) --}}
+        <div class="bg-white rounded-xl border border-stone-200 p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 style="font-family:'Lusitana',serif; font-size:16px; font-weight:700; color:#0f172a;">Shop Filters</h3>
+                <a href="{{ route('admin.filters.index') }}" class="text-xs font-medium transition-colors hover:underline" style="color:#E8651A;">Manage filter options →</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Room Type <span style="color:#9ca3af;font-weight:400;">(filter)</span></label>
+                    <select name="room_type"
+                            class="w-full px-4 py-2.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-100 transition-all bg-white"
+                            style="color:#0f172a;">
+                        <option value="">— Select room —</option>
+                        @foreach($filterOptions['room'] as $opt)
+                        <option value="{{ $opt }}" {{ old('room_type', $product->room_type ?? '') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Availability <span style="color:#9ca3af;font-weight:400;">(filter)</span></label>
+                    <select name="availability"
+                            class="w-full px-4 py-2.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-100 transition-all bg-white"
+                            style="color:#0f172a;">
+                        <option value="">— Select availability —</option>
+                        @foreach($filterOptions['availability'] as $a)
+                        <option value="{{ $a['value'] }}" {{ old('availability', $product->availability ?? '') === $a['value'] ? 'selected' : '' }}>{{ $a['label'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Size Category <span style="color:#9ca3af;font-weight:400;">(filter)</span></label>
+                    <select name="size_category"
+                            class="w-full px-4 py-2.5 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-100 transition-all bg-white"
+                            style="color:#0f172a;">
+                        <option value="">— Select size —</option>
+                        @foreach($filterOptions['size'] as $opt)
+                        <option value="{{ $opt }}" {{ old('size_category', $product->size_category ?? '') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <p style="font-size:11px; color:#9ca3af; margin-top:10px;">These options come from <a href="{{ route('admin.filters.index') }}" style="color:#E8651A; text-decoration:underline;">Collection Filters</a>. Add or edit options there to update these dropdowns.</p>
         </div>
 
         {{-- Section: Visibility Flags --}}
@@ -390,22 +445,22 @@ if (old('color_names')) {
                         </svg>
                     </div>
                     <p style="font-size:13px; font-weight:500; color:#374151;">Click or drag images here</p>
-                    <p style="font-size:12px; color:#9ca3af; margin-top:4px;">PNG, JPG, WEBP up to 5MB each</p>
+                    <p style="font-size:12px; color:#9ca3af; margin-top:4px;">PNG, JPG, WEBP up to 5MB each · max 4 images per product</p>
                 </div>
             </div>
             @error('images')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
             @error('images.*')<p class="text-red-500 text-xs mt-2">{{ $message }}</p>@enderror
 
             {{-- New file preview --}}
-            <div id="newImagePreview" class="grid grid-cols-3 gap-2 mt-4"></div>
+            <div id="newImagePreview" class="grid grid-cols-4 gap-2 mt-4"></div>
 
             {{-- Existing images --}}
             @if(isset($product) && $product->images->count())
             <div class="mt-6">
                 <p style="font-size:12px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;" class="mb-3">Current Images</p>
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-4 gap-2">
                     @foreach($product->images as $img)
-                    <div class="relative group rounded-lg overflow-hidden border border-stone-200" style="aspect-ratio:1/1;">
+                    <div class="relative group rounded-lg overflow-hidden border border-stone-200" data-existing-image style="aspect-ratio:1/1;">
                         <img src="{{ $img->url }}" alt="" class="w-full h-full object-cover">
                         @if($img->is_primary)
                         <div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold" style="background:#E8651A; color:#fff;">Primary</div>
@@ -438,6 +493,14 @@ if (old('color_names')) {
 function previewImages(input) {
     const container = document.getElementById('newImagePreview');
     container.innerHTML = '';
+    const existingCount = document.querySelectorAll('[data-existing-image]').length;
+    const maxNew = 4 - existingCount;
+    if (input.files && input.files.length > maxNew) {
+        alert('You can upload up to ' + maxNew + ' more image(s) (4 total per product).');
+        const dt = new DataTransfer();
+        for (let i = 0; i < Math.min(input.files.length, maxNew); i++) dt.items.add(input.files[i]);
+        input.files = dt.files;
+    }
     if (input.files && input.files.length > 0) {
         for (let file of input.files) {
             const reader = new FileReader();

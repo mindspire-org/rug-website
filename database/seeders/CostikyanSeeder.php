@@ -18,7 +18,7 @@ class CostikyanSeeder extends Seeder
     {
         // ── Admin user ──────────────────────────────────────────────────
         $admin = User::firstOrCreate(
-            ['email' => 'admin@costikyan.com'],
+            ['email' => 'admin@costikyancustomcarpet.com'],
             [
                 'name'              => 'Admin',
                 'password'          => Hash::make('password'),
@@ -29,7 +29,7 @@ class CostikyanSeeder extends Seeder
 
         // ── Demo customer ────────────────────────────────────────────────
         User::firstOrCreate(
-            ['email' => 'customer@costikyan.com'],
+            ['email' => 'customer@costikyancustomcarpet.com'],
             [
                 'name'              => 'Jane Smith',
                 'password'          => Hash::make('password'),
@@ -238,7 +238,7 @@ class CostikyanSeeder extends Seeder
         );
 
         $this->command->info('✅ Costikyan seeder complete!');
-        $this->command->info('   Admin:    admin@costikyan.com / password');
-        $this->command->info('   Customer: customer@costikyan.com / password');
+        $this->command->info('   Admin:    admin@costikyancustomcarpet.com / password');
+        $this->command->info('   Customer: customer@costikyancustomcarpet.com / password');
     }
 }

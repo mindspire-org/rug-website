@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') — Costikyan Admin</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/favicon.svg') }}">
+    <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#111111">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lusitana:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -134,6 +139,7 @@
                     ['route'=>'admin.coupons.index',   'label'=>'Coupons',     'match'=>'admin.coupons.*',       'icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>'],
                     ['route'=>'admin.zip-prices.index','label'=>'ZIP Pricing',  'match'=>'admin.zip-prices.*',    'icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/><circle cx="12" cy="11" r="3" stroke-width="1.5"/>'],
                     ['route'=>'admin.trade-accounts.index','label'=>'Trade Accounts','match'=>'admin.trade-accounts.*','icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0 1 12 15c-3.183 0-6.164-.62-9-1.745M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2m0 0V4a2 2 0 0 0 2-2h4a2 2 0 0 0 2 2v2m-6 4h.01M12 12h.01M8 12h.01M16 12h.01"/>'],
+                    ['route'=>'admin.trade-projects.index','label'=>'Trade Projects','match'=>'admin.trade-projects.*','icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/>'],
                 ],
                 'Submissions' => [
                     ['route'=>'admin.submissions.estimates',     'label'=>'Estimates',      'match'=>'admin.submissions.estimates',      'icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6M9 8h6M9 16h4M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>'],

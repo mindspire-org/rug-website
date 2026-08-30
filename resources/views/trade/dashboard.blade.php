@@ -12,14 +12,14 @@
 {{-- ── Stat cards ── --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     @php
-    $stats = [
-        ['icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',  'label'=>'Active Projects',     'value'=>12],
-        ['icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6M9 8h6M9 16h4M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>', 'label'=>'Pending Quotes',      'value'=>5],
-        ['icon'=>'<circle cx="12" cy="12" r="9" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3"/>',                                     'label'=>'Samples in Progress',  'value'=>3],
-        ['icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4z"/>',                                                           'label'=>'Orders in Production', 'value'=>8],
+    $statCards = [
+        ['icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',  'label'=>'Active Projects',     'value'=>$stats['active_projects']],
+        ['icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6M9 8h6M9 16h4M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>', 'label'=>'Pending Quotes',      'value'=>$stats['pending_quotes']],
+        ['icon'=>'<circle cx="12" cy="12" r="9" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3"/>',                                     'label'=>'Samples in Progress',  'value'=>$stats['samples_progress']],
+        ['icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4z"/>',                                                           'label'=>'Orders in Production', 'value'=>$stats['orders_production']],
     ];
     @endphp
-    @foreach($stats as $s)
+    @foreach($statCards as $s)
     <div class="bg-white border border-stone-200 rounded-lg p-5 flex flex-col gap-3">
         <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $s['icon'] !!}</svg>
         <div class="flex items-end justify-between">
@@ -34,11 +34,11 @@
 <div class="bg-white border border-stone-200 rounded-lg px-6 py-5 flex items-center justify-between mb-6">
     <div>
         <p style="font-size:11px; font-weight:600; letter-spacing:0.1em; color:rgba(18,18,18,0.45);" class="mb-1">ACCOUNT TIER</p>
-        <p style="font-family:'Lusitana',serif; font-size:20px; font-weight:700; color:#121212;">Gold Trade Partner</p>
+        <p style="font-family:'Lusitana',serif; font-size:20px; font-weight:700; color:#121212;">{{ Auth::user()->company_name ?? 'Trade Partner' }}</p>
     </div>
     <div class="text-right">
         <p style="font-size:11px; font-weight:600; letter-spacing:0.1em; color:rgba(18,18,18,0.45);" class="mb-1">YOUR DISCOUNT</p>
-        <p style="font-family:'Lusitana',serif; font-size:22px; font-weight:700; color:#B8860B;">25% off MSRP</p>
+        <p style="font-family:'Lusitana',serif; font-size:22px; font-weight:700; color:#B8860B;">{{ $discount }}% off MSRP</p>
     </div>
 </div>
 
@@ -70,6 +70,7 @@
         <h2 style="font-size:16px; font-weight:600; color:#121212;">Recent Projects</h2>
         <a href="{{ route('trade.portal.projects') }}" style="font-size:13px; color:#121212;">View All →</a>
     </div>
+    @if($recentProjects->count())
     <table class="w-full">
         <thead>
             <tr style="border-bottom:1px solid rgba(18,18,18,0.08);">
@@ -80,32 +81,28 @@
             </tr>
         </thead>
         <tbody>
-            @php
-            $projects = [
-                ['name'=>'Tabriz Heritage Collection','client'=>'Sarah Mitchell','rugs'=>4, 'updated'=>'2 hours ago'],
-                ['name'=>'Tabriz Heritage Collection','client'=>'The Whites',    'rugs'=>9, 'updated'=>'3 days ago'],
-                ['name'=>'Sultanabad Grand Series',   'client'=>'James Park',    'rugs'=>2, 'updated'=>'1 day ago'],
-                ['name'=>'Sultanabad Grand Series',   'client'=>'James Park',    'rugs'=>5, 'updated'=>'1 day ago'],
-                ['name'=>'Sultanabad Grand Series',   'client'=>'James Park',    'rugs'=>2, 'updated'=>'1 day ago'],
-            ];
-            @endphp
-            @foreach($projects as $p)
+            @foreach($recentProjects as $p)
             <tr style="border-bottom:1px solid rgba(18,18,18,0.06);" class="hover:bg-stone-50 transition-colors">
                 <td class="px-6 py-3">
                     <div class="flex items-center gap-2.5">
                         <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                         </svg>
-                        <span style="font-size:14px; font-weight:500; color:#121212;">{{ $p['name'] }}</span>
+                        <span style="font-size:14px; font-weight:500; color:#121212;">{{ $p->name }}</span>
                     </div>
                 </td>
-                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $p['client'] }}</td>
-                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $p['rugs'] }}</td>
-                <td class="px-6 py-3 text-right" style="font-size:13px; color:rgba(18,18,18,0.45);">{{ $p['updated'] }}</td>
+                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $p->client_name }}</td>
+                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $p->rugs_count }}</td>
+                <td class="px-6 py-3 text-right" style="font-size:13px; color:rgba(18,18,18,0.45);">{{ $p->updated_at->diffForHumans() }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
+    @else
+    <div class="px-6 py-8 text-center">
+        <p style="font-size:14px; color:rgba(18,18,18,0.55);">No projects yet. <a href="{{ route('trade.portal.projects') }}" style="color:#B8860B; font-weight:500;">Create your first project →</a></p>
+    </div>
+    @endif
 </div>
 
 @endsection

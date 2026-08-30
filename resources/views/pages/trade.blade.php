@@ -31,10 +31,29 @@
         @endforeach
     </div>
 
-    <div class="bg-stone-950 text-white p-10 text-center">
-        <h2 class="font-serif text-2xl font-bold mb-3">Apply for Trade Access</h2>
-        <p class="text-stone-400 text-sm mb-6">Contact our trade team to get started with your application.</p>
-        <a href="{{ route('contact') }}" class="btn-gold text-sm">Contact Trade Team</a>
+    <div class="bg-stone-950 text-white p-8 md:p-10">
+        <div class="max-w-xl mx-auto">
+            <h2 class="font-serif text-2xl font-bold mb-2 text-center">Apply for Trade Access</h2>
+            <p class="text-stone-400 text-sm mb-6 text-center">Submit your details and our trade team will review your application and set up your account.</p>
+            @if(session('success'))
+            <div class="bg-green-500/15 border border-green-500/40 text-green-300 text-sm rounded p-3 mb-5 text-center">{{ session('success') }}</div>
+            @endif
+            <form action="{{ route('trade.apply') }}" method="POST" class="space-y-3">
+                @csrf
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="text" name="first_name" placeholder="First name" value="{{ old('first_name') }}" class="w-full px-4 py-2.5 text-sm rounded bg-stone-900 border border-stone-700 text-white placeholder-stone-500 focus:outline-none focus:border-amber-400">
+                    <input type="text" name="last_name" placeholder="Last name" value="{{ old('last_name') }}" class="w-full px-4 py-2.5 text-sm rounded bg-stone-900 border border-stone-700 text-white placeholder-stone-500 focus:outline-none focus:border-amber-400">
+                </div>
+                <input type="text" name="company" placeholder="Company / Studio" value="{{ old('company') }}" class="w-full px-4 py-2.5 text-sm rounded bg-stone-900 border border-stone-700 text-white placeholder-stone-500 focus:outline-none focus:border-amber-400">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="email" name="email" placeholder="Business email" value="{{ old('email') }}" required class="w-full px-4 py-2.5 text-sm rounded bg-stone-900 border border-stone-700 text-white placeholder-stone-500 focus:outline-none focus:border-amber-400">
+                    <input type="tel" name="phone" placeholder="Phone" value="{{ old('phone') }}" class="w-full px-4 py-2.5 text-sm rounded bg-stone-900 border border-stone-700 text-white placeholder-stone-500 focus:outline-none focus:border-amber-400">
+                </div>
+                <textarea name="message" rows="3" placeholder="Tell us about your business (optional)" class="w-full px-4 py-2.5 text-sm rounded bg-stone-900 border border-stone-700 text-white placeholder-stone-500 focus:outline-none focus:border-amber-400">{{ old('message') }}</textarea>
+                @error('email')<p class="text-red-400 text-xs">{{ $message }}</p>@enderror
+                <button type="submit" class="w-full bg-amber-400 hover:bg-amber-500 text-stone-900 font-medium text-sm py-3 rounded transition-colors">Submit Trade Application</button>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

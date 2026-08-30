@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'team'  => \App\Http\Middleware\TeamMiddleware::class,
             'trade' => \App\Http\Middleware\TradeMiddleware::class,
         ]);
+        
+        // Allow iframe embedding for VS Code preview
+        $middleware->appendToGroup('web', \App\Http\Middleware\AllowIframeMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

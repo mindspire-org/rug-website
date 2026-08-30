@@ -17,6 +17,7 @@
             subtotal: {{ (float) $cart->subtotal }},
             discount: {{ (float) $discount }},
             delivery: '{{ $delivery }}',
+            sampleOnly: {{ $cart->items->where('is_sample', false)->count() === 0 ? 'true' : 'false' }},
             deliveryPrices: { whiteglove: 250, ups: 500, pickup: 50 },
             addons: {
                 protector: {{ in_array('protector', $addons) ? 'true' : 'false' }},
@@ -24,8 +25,8 @@
                 spot:      {{ in_array('spot', $addons) ? 'true' : 'false' }}
             },
             addonPrices: { protector: 120, padding: 190, spot: 19.99 },
-            get deliveryCost() { return this.deliveryPrices[this.delivery] || 0; },
-            get addonsCost() { let s = 0; for (const k in this.addons) { if (this.addons[k]) s += this.addonPrices[k]; } return s; },
+            get deliveryCost() { return this.sampleOnly ? 0 : (this.deliveryPrices[this.delivery] || 0); },
+            get addonsCost() { if (this.sampleOnly) return 0; let s = 0; for (const k in this.addons) { if (this.addons[k]) s += this.addonPrices[k]; } return s; },
             get total() { return Math.max(0, this.subtotal - this.discount) + this.deliveryCost + this.addonsCost; },
             money(n) { return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); },
             persist() {

@@ -33,6 +33,9 @@ class User extends Authenticatable
         'password',
         'role',
         'phone',
+        'ai_credits',
+        'company_name',
+        'trade_discount',
     ];
 
     /**
@@ -132,5 +135,30 @@ class User extends Authenticatable
     public function cart()
     {
         return $this->hasOne(Cart::class);
+    }
+
+    public function savedEstimates()
+    {
+        return $this->hasMany(SavedEstimate::class);
+    }
+
+    public function roomVisualizations()
+    {
+        return $this->hasMany(RoomVisualization::class);
+    }
+
+    public function tradeProjects()
+    {
+        return $this->hasMany(TradeProject::class);
+    }
+
+    public function tradeQuotes()
+    {
+        return $this->hasMany(TradeQuote::class);
+    }
+
+    public function sampleRequests()
+    {
+        return $this->hasMany(SampleRequest::class);
     }
 }

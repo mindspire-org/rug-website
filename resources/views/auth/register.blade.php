@@ -39,20 +39,19 @@
                     </div>
                 </div>
             </label>
-            <label class="cursor-pointer" @click="accountType='trade'">
-                <input type="radio" name="account_type" value="trade" x-model="accountType" class="sr-only">
-                <div class="flex items-center gap-2.5 p-3 rounded-md border-2 transition-all duration-150"
-                     :style="accountType==='trade' ? 'border-color:#E8651A; background:#fff8f5;' : 'border-color:#e5e7eb; background:#fff;'">
-                    <svg class="w-4 h-4 flex-shrink-0" :style="accountType==='trade' ? 'color:#E8651A' : 'color:#9ca3af'"
+            <a href="{{ route('trade') }}" class="cursor-pointer">
+                <div class="flex items-center gap-2.5 p-3 rounded-md border-2 border-dashed transition-all duration-150"
+                     style="border-color:#e5e7eb; background:#fff;">
+                    <svg class="w-4 h-4 flex-shrink-0" style="color:#9ca3af;"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4"/>
                     </svg>
                     <div>
-                        <p style="font-size:12px; font-weight:600;" :style="accountType==='trade' ? 'color:#E8651A' : 'color:#6b7280'">Trade</p>
-                        <p style="font-size:10px; color:#9ca3af;">Designer / B2B</p>
+                        <p style="font-size:12px; font-weight:600; color:#6b7280;">Trade / Designer?</p>
+                        <p style="font-size:10px; color:#9ca3af;">Request access &rarr;</p>
                     </div>
                 </div>
-            </label>
+            </a>
         </div>
     </div>
 

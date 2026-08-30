@@ -17,6 +17,6 @@ class ProductImage extends Model
 
     public function getUrlAttribute()
     {
-        return asset('storage/' . $this->path);
+        return route('media.show', ['path' => $this->path]);
     }
 }

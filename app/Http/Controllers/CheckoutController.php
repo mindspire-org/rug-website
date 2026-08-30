@@ -36,33 +36,47 @@ class CheckoutController extends Controller
         }
         $deliveryCost = Cart::deliveryCost(session('cart_delivery', 'whiteglove'));
         $addonsCost   = Cart::addonsCost((array) session('cart_addons', []));
+        $sampleOnly   = $cart->items->count() > 0 && $cart->items->where("is_sample", false)->count() === 0;
+        if ($sampleOnly) { $deliveryCost = 0; $addonsCost = 0; }
         $shipping     = $deliveryCost + $addonsCost;
         $tax          = round(($subtotal - $discount) * 0.08, 2);
         $total        = $subtotal - $discount + $shipping + $tax;
 
         $addresses = Auth::user()->addresses()->get();
 
-        $stripeKey = config('services.stripe.secret');
-        if (! $stripeKey || str_contains($stripeKey, '_KEY') || ! str_starts_with($stripeKey, 'sk_')) {
-            return redirect()->route('cart.index')
-                ->with('error', 'Payment processing is temporarily unavailable. Please contact us to complete your order.');
-        }
+        // Free orders (e.g. sample-only carts) skip Stripe entirely — Stripe rejects
+        // any PaymentIntent under $0.50, which was throwing a 500 at checkout.
+        $isFree = $total < 0.50;
+        $paymentIntent = null;
 
-        Stripe::setApiKey($stripeKey);
-        $paymentIntent = PaymentIntent::create([
-            'amount'   => (int)($total * 100),
-            'currency' => 'usd',
-            'metadata' => ['user_id' => Auth::id()],
-        ]);
+        if (! $isFree) {
+            $stripeKey = config('services.stripe.secret');
+            if (! $stripeKey || str_contains($stripeKey, '_KEY') || ! str_starts_with($stripeKey, 'sk_')) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Payment processing is temporarily unavailable. Please contact us to complete your order.');
+            }
+
+            Stripe::setApiKey($stripeKey);
+            $paymentIntent = PaymentIntent::create([
+                'amount'   => (int)($total * 100),
+                'currency' => 'usd',
+                'metadata' => ['user_id' => Auth::id()],
+            ]);
+        }
 
         return view('checkout.index', compact(
             'cart', 'subtotal', 'discount', 'shipping', 'tax', 'total',
-            'coupon', 'addresses', 'paymentIntent', 'deliveryCost', 'addonsCost'
+            'coupon', 'addresses', 'paymentIntent', 'deliveryCost', 'addonsCost', 'isFree'
         ));
     }
 
     public function store(Request $request)
     {
+        $cart    = $this->getCart();
+        $cartSubtotalCheck = $cart->subtotal;
+        $isFreeOrder = ($cartSubtotalCheck - 0) <= 0
+            && $cart->items->where('is_sample', false)->count() === 0;
+
         $request->validate([
             'full_name'        => 'required|string|max:100',
             'email'            => 'required|email',
@@ -72,10 +86,9 @@ class CheckoutController extends Controller
             'state'            => 'nullable|string|max:100',
             'zip'              => 'required|string|max:20',
             'country'          => 'required|string|max:100',
-            'payment_intent_id'=> 'required|string',
+            'payment_intent_id'=> $isFreeOrder ? 'nullable|string' : 'required|string',
         ]);
 
-        $cart    = $this->getCart();
         $subtotal = $cart->subtotal;
         $coupon   = session('coupon');
         $discount = 0;
@@ -90,6 +103,8 @@ class CheckoutController extends Controller
         }
         $deliveryCost = Cart::deliveryCost(session('cart_delivery', 'whiteglove'));
         $addonsCost   = Cart::addonsCost((array) session('cart_addons', []));
+        $sampleOnly   = $cart->items->count() > 0 && $cart->items->where("is_sample", false)->count() === 0;
+        if ($sampleOnly) { $deliveryCost = 0; $addonsCost = 0; }
         $shipping     = $deliveryCost + $addonsCost;
         $tax          = round(($subtotal - $discount) * 0.08, 2);
         $total        = $subtotal - $discount + $shipping + $tax;
@@ -106,7 +121,7 @@ class CheckoutController extends Controller
             'discount'           => $discount,
             'total'              => $total,
             'shipping_address'   => $shippingAddress,
-            'payment_intent_id'  => $request->payment_intent_id,
+            'payment_intent_id'  => $request->payment_intent_id ?: 'free',
             'payment_status'     => 'paid',
             'coupon_code'        => $coupon,
         ]);

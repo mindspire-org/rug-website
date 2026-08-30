@@ -8,9 +8,9 @@
     // Category bubble — always one of the three: In Stock / Custom Size / Made to Order
     $catSlug = $product->category->slug ?? '';
     if ($catSlug === 'custom-designs')        $badgeLabel = 'Fully Custom';
-    elseif ($catSlug === 'made-to-order')  $badgeLabel = 'Made to Order';
+    elseif ($catSlug === 'made-to-order')  $badgeLabel = 'Custom Size';
     elseif ($catSlug === 'in-stock')       $badgeLabel = 'In Stock';
-    else                                   $badgeLabel = ($product->stock ?? 0) > 0 ? 'In Stock' : 'Made to Order';
+    else                                   $badgeLabel = ($product->stock ?? 0) > 0 ? 'In Stock' : 'Custom Size';
 
     // Secondary image for hover swap (#18)
     $secondImg = ($product->relationLoaded('images') ? $product->images->count() > 1 : $product->images()->count() > 1)
@@ -94,7 +94,7 @@
             <p style="font-family:'Lusitana',serif; font-size:20px; line-height:26px; font-weight:700;
                       color:#171717; text-transform:capitalize;"
                class="flex-1 min-w-0 truncate">
-                {{ $product->name }}
+                {{ $product->display_name }}
             </p>
             <span style="font-family:'Lusitana',serif; font-size:18px; line-height:26px; font-weight:400;
                          color:#171717; white-space:nowrap; flex-shrink:0;">

@@ -8,11 +8,11 @@
         <h1 style="font-family:'Lusitana',serif; font-size:28px; font-weight:700; color:#121212;">Sample Requests</h1>
         <p style="font-size:14px; color:rgba(18,18,18,0.55); margin-top:4px;">Request and track material samples</p>
     </div>
-    <button class="flex items-center gap-2 text-white rounded"
-            style="background:#121212; padding:10px 18px; font-size:14px; font-weight:500;">
+    <a href="{{ route('trade.portal.samples.create') }}" class="flex items-center gap-2 text-white rounded"
+            style="background:#121212; padding:10px 18px; font-size:14px; font-weight:500; text-decoration:none;">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/></svg>
         Request Sample
-    </button>
+    </a>
 </div>
 
 <div class="flex gap-3 mb-5">
@@ -29,7 +29,17 @@
     </select>
 </div>
 
+@php
+$statusColors = [
+    'pending'   => 'color:#b45309; background:#fef3c7; border:1px solid #fde68a;',
+    'approved'  => 'color:#1d4ed8; background:#dbeafe; border:1px solid #bfdbfe;',
+    'shipped'   => 'color:#7c3aed; background:#ede9fe; border:1px solid #ddd6fe;',
+    'delivered' => 'color:#15803d; background:#dcfce7; border:1px solid #bbf7d0;',
+];
+@endphp
+
 <div class="bg-white border border-stone-200 rounded-lg overflow-hidden">
+    @if($samples->count())
     <table class="w-full">
         <thead>
             <tr style="border-bottom:1px solid rgba(18,18,18,0.08); background:#fafafa;">
@@ -41,26 +51,6 @@
             </tr>
         </thead>
         <tbody>
-            @php
-            $samples = [
-                ['num'=>'S-401','date'=>'Feb 28, 2026','rug'=>'Tabriz Heritage',   'color'=>'Ivory / Gold',    'status'=>'Shipped',   'tracking'=>'1Z999AA10123456784'],
-                ['num'=>'S-400','date'=>'Feb 27, 2026','rug'=>'Sultanabad Classic','color'=>'Midnight Blue',   'status'=>'Approved',  'tracking'=>'–'],
-                ['num'=>'S-401','date'=>'Feb 28, 2026','rug'=>'Tabriz Heritage',   'color'=>'Ivory / Gold',    'status'=>'Shipped',   'tracking'=>'1Z999AA10123456784'],
-                ['num'=>'S-398','date'=>'Feb 20, 2026','rug'=>'Agra Imperial',     'color'=>'Rust / Ivory',    'status'=>'Delivered', 'tracking'=>'1Z999AA10123456782'],
-                ['num'=>'S-400','date'=>'Feb 27, 2026','rug'=>'Sultanabad Classic','color'=>'Midnight Blue',   'status'=>'Approved',  'tracking'=>'–'],
-                ['num'=>'S-399','date'=>'Feb 25, 2026','rug'=>'Oushak Revival',    'color'=>'Sage / Cream',    'status'=>'Pending',   'tracking'=>'–'],
-                ['num'=>'S-400','date'=>'Feb 27, 2026','rug'=>'Sultanabad Classic','color'=>'Midnight Blue',   'status'=>'Approved',  'tracking'=>'–'],
-                ['num'=>'S-399','date'=>'Feb 25, 2026','rug'=>'Oushak Revival',    'color'=>'Sage / Cream',    'status'=>'Pending',   'tracking'=>'–'],
-                ['num'=>'S-399','date'=>'Feb 25, 2026','rug'=>'Oushak Revival',    'color'=>'Sage / Cream',    'status'=>'Pending',   'tracking'=>'–'],
-                ['num'=>'S-398','date'=>'Feb 20, 2026','rug'=>'Agra Imperial',     'color'=>'Rust / Ivory',    'status'=>'Delivered', 'tracking'=>'1Z999AA10123456782'],
-            ];
-            $statusColors = [
-                'Pending'   => 'color:#b45309; background:#fef3c7; border:1px solid #fde68a;',
-                'Approved'  => 'color:#1d4ed8; background:#dbeafe; border:1px solid #bfdbfe;',
-                'Shipped'   => 'color:#7c3aed; background:#ede9fe; border:1px solid #ddd6fe;',
-                'Delivered' => 'color:#15803d; background:#dcfce7; border:1px solid #bbf7d0;',
-            ];
-            @endphp
             @foreach($samples as $s)
             <tr style="border-bottom:1px solid rgba(18,18,18,0.06);" class="hover:bg-stone-50 transition-colors">
                 <td class="px-5 py-3">
@@ -70,23 +60,32 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3"/>
                         </svg>
                         <div>
-                            <p style="font-size:14px; font-weight:500; color:#121212;">{{ $s['num'] }}</p>
-                            <p style="font-size:12px; color:rgba(18,18,18,0.45);">{{ $s['date'] }}</p>
+                            <p style="font-size:14px; font-weight:500; color:#121212;">#{{ $s->id }}</p>
+                            <p style="font-size:12px; color:rgba(18,18,18,0.45);">{{ $s->created_at->format('M j, Y') }}</p>
                         </div>
                     </div>
                 </td>
-                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $s['rug'] }}</td>
-                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $s['color'] }}</td>
+                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $s->rug_name ?? $s->product?->name ?? '—' }}</td>
+                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $s->color ?? '—' }}</td>
                 <td class="px-4 py-3">
-                    <span style="font-size:12px; font-weight:500; padding:3px 10px; border-radius:20px; {{ $statusColors[$s['status']] }}">
-                        {{ $s['status'] }}
+                    <span style="font-size:12px; font-weight:500; padding:3px 10px; border-radius:20px; {{ $statusColors[$s->status] ?? $statusColors['pending'] }}">
+                        {{ ucfirst($s->status) }}
                     </span>
                 </td>
-                <td class="px-5 py-3" style="font-size:13px; color:rgba(18,18,18,0.55); font-family:monospace;">{{ $s['tracking'] }}</td>
+                <td class="px-5 py-3" style="font-size:13px; color:rgba(18,18,18,0.55); font-family:monospace;">{{ $s->tracking_number ?? '—' }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
+    @else
+    <div class="px-6 py-12 text-center">
+        <svg class="w-10 h-10 text-stone-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-width="1.5"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3"/>
+        </svg>
+        <p style="font-size:14px; color:rgba(18,18,18,0.55);">No sample requests yet. Request your first sample.</p>
+    </div>
+    @endif
 </div>
 
 @endsection

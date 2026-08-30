@@ -30,41 +30,36 @@
     </select>
 </div>
 
+@php
+$statusColors = [
+    'pending'     => 'color:#b45309; background:#fef3c7; border:1px solid #fde68a;',
+    'processing' => 'color:#7c3aed; background:#ede9fe; border:1px solid #ddd6fe;',
+    'shipped'   => 'color:#1d4ed8; background:#dbeafe; border:1px solid #bfdbfe;',
+    'delivered' => 'color:#15803d; background:#dcfce7; border:1px solid #bbf7d0;',
+    'cancelled' => 'color:#c2410c; background:#ffedd5; border:1px solid #fed7aa;',
+];
+$statusLabels = [
+    'pending'     => 'Pending',
+    'processing'  => 'Processing',
+    'shipped'     => 'Shipped',
+    'delivered'   => 'Delivered',
+    'cancelled'   => 'Cancelled',
+];
+@endphp
+
 <div class="bg-white border border-stone-200 rounded-lg overflow-hidden">
+    @if($orders->count())
     <table class="w-full">
         <thead>
             <tr style="border-bottom:1px solid rgba(18,18,18,0.08); background:#fafafa;">
                 <th class="px-5 py-3 text-left" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:rgba(18,18,18,0.45);">ORDER</th>
-                <th class="px-4 py-3 text-left" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:rgba(18,18,18,0.45);">RUG</th>
-                <th class="px-4 py-3 text-left" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:rgba(18,18,18,0.45);">TYPE</th>
+                <th class="px-4 py-3 text-left" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:rgba(18,18,18,0.45);">ITEMS</th>
                 <th class="px-4 py-3 text-left" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:rgba(18,18,18,0.45);">STATUS</th>
-                <th class="px-4 py-3 text-right" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:rgba(18,18,18,0.45);">ETA</th>
+                <th class="px-4 py-3 text-right" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:rgba(18,18,18,0.45);">DATE</th>
                 <th class="px-5 py-3 text-right" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:rgba(18,18,18,0.45);">TOTAL</th>
             </tr>
         </thead>
         <tbody>
-            @php
-            $orders = [
-                ['num'=>'ORD-2048','rug'=>'Tabriz Heritage 9×12',    'type'=>'Standard','status'=>'In Production',   'eta'=>'Apr 15, 2026','total'=>5400],
-                ['num'=>'ORD-2047','rug'=>'Custom Sultanabad 10×14', 'type'=>'Custom',  'status'=>'Loom Scheduled',  'eta'=>'May 1, 2026', 'total'=>8200],
-                ['num'=>'ORD-2045','rug'=>'Agra Imperial 12×15',     'type'=>'Custom',  'status'=>'Quality Check',   'eta'=>'Mar 20, 2026','total'=>12600],
-                ['num'=>'ORD-2047','rug'=>'Custom Sultanabad 10×14', 'type'=>'Custom',  'status'=>'Loom Scheduled',  'eta'=>'May 1, 2026', 'total'=>8200],
-                ['num'=>'ORD-2044','rug'=>'Ziegler Modern 6×9',      'type'=>'Standard','status'=>'Delivered',       'eta'=>'Delivered',   'total'=>3200],
-                ['num'=>'ORD-2046','rug'=>'Oushak Revival 8×10',     'type'=>'Standard','status'=>'Shipped',         'eta'=>'Delivered',   'total'=>4100],
-                ['num'=>'ORD-2046','rug'=>'Oushak Revival 8×10',     'type'=>'Standard','status'=>'Shipped',         'eta'=>'Delivered',   'total'=>4100],
-                ['num'=>'ORD-2044','rug'=>'Ziegler Modern 6×9',      'type'=>'Standard','status'=>'Delivered',       'eta'=>'Delivered',   'total'=>3200],
-                ['num'=>'ORD-2048','rug'=>'Tabriz Heritage 9×12',    'type'=>'Standard','status'=>'In Production',   'eta'=>'Apr 15, 2026','total'=>5400],
-                ['num'=>'ORD-2046','rug'=>'Oushak Revival 8×10',     'type'=>'Standard','status'=>'Shipped',         'eta'=>'Delivered',   'total'=>4100],
-                ['num'=>'ORD-2047','rug'=>'Custom Sultanabad 10×14', 'type'=>'Custom',  'status'=>'Loom Scheduled',  'eta'=>'May 1, 2026', 'total'=>8200],
-            ];
-            $statusColors = [
-                'In Production'  => 'color:#b45309; background:#fef3c7; border:1px solid #fde68a;',
-                'Loom Scheduled' => 'color:#7c3aed; background:#ede9fe; border:1px solid #ddd6fe;',
-                'Quality Check'  => 'color:#db2777; background:#fce7f3; border:1px solid #fbcfe8;',
-                'Shipped'        => 'color:#1d4ed8; background:#dbeafe; border:1px solid #bfdbfe;',
-                'Delivered'      => 'color:#15803d; background:#dcfce7; border:1px solid #bbf7d0;',
-            ];
-            @endphp
             @foreach($orders as $o)
             <tr style="border-bottom:1px solid rgba(18,18,18,0.06);" class="hover:bg-stone-50 transition-colors">
                 <td class="px-5 py-3">
@@ -72,22 +67,29 @@
                         <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4z"/>
                         </svg>
-                        <span style="font-size:14px; font-weight:500; color:#121212;">{{ $o['num'] }}</span>
+                        <span style="font-size:14px; font-weight:500; color:#121212;">{{ $o->order_number }}</span>
                     </div>
                 </td>
-                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $o['rug'] }}</td>
-                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $o['type'] }}</td>
+                <td class="px-4 py-3" style="font-size:14px; color:rgba(18,18,18,0.7);">{{ $o->items->count() }} item{{ $o->items->count() !== 1 ? 's' : '' }}</td>
                 <td class="px-4 py-3">
-                    <span style="font-size:12px; font-weight:500; padding:3px 10px; border-radius:20px; {{ $statusColors[$o['status']] }}">
-                        {{ $o['status'] }}
+                    <span style="font-size:12px; font-weight:500; padding:3px 10px; border-radius:20px; {{ $statusColors[$o->status] ?? $statusColors['pending'] }}">
+                        {{ $statusLabels[$o->status] ?? ucfirst($o->status) }}
                     </span>
                 </td>
-                <td class="px-4 py-3 text-right" style="font-size:13px; color:rgba(18,18,18,0.6);">{{ $o['eta'] }}</td>
-                <td class="px-5 py-3 text-right" style="font-size:14px; font-weight:500; color:#121212;">${{ number_format($o['total']) }}</td>
+                <td class="px-4 py-3 text-right" style="font-size:13px; color:rgba(18,18,18,0.6);">{{ $o->created_at->format('M j, Y') }}</td>
+                <td class="px-5 py-3 text-right" style="font-size:14px; font-weight:500; color:#121212;">${{ number_format($o->total, 0) }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
+    @else
+    <div class="px-6 py-12 text-center">
+        <svg class="w-10 h-10 text-stone-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4z"/>
+        </svg>
+        <p style="font-size:14px; color:rgba(18,18,18,0.55);">No orders yet. Place your first trade order.</p>
+    </div>
+    @endif
 </div>
 
 @endsection

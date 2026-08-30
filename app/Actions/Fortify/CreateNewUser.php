@@ -23,19 +23,17 @@ class CreateNewUser implements CreatesNewUsers
             'name'         => ['required', 'string', 'max:255'],
             'email'        => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password'     => $this->passwordRules(),
-            'account_type' => ['required', 'in:customer,trade'],
+            'account_type' => ['nullable', 'in:customer,trade'],
             'terms'        => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
-        $role = $input['account_type'] === 'trade'
-            ? \App\Models\User::ROLE_TRADE
-            : \App\Models\User::ROLE_CLIENT;
-
+        // Public self-registration always creates a customer account. Trade access
+        // is granted only by staff (via a trade request form), never at signup.
         return User::create([
             'name'     => $input['name'],
             'email'    => $input['email'],
             'password' => Hash::make($input['password']),
-            'role'     => $role,
+            'role'     => \App\Models\User::ROLE_CLIENT,
         ]);
     }
 }

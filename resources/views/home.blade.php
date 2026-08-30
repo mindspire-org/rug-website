@@ -9,7 +9,7 @@
 <section class="relative h-[85vh] min-h-[560px] flex items-center justify-center overflow-hidden">
     {{-- Background: COVER photo --}}
     <div class="absolute inset-0">
-        <img src="{{ asset('images/cover.jpg') }}" alt="Costikyan Custom Carpet"
+        <img src="{{ asset('images/home-hero.jpg') }}" alt="Costikyan Custom Carpet"
              class="w-full h-full object-cover object-center">
         <div class="absolute inset-0 bg-gradient-to-b from-stone-900/50 via-stone-900/30 to-stone-900/65"></div>
     </div>
@@ -130,9 +130,9 @@
 
             {{-- Card 1: Truly Yours — CARD 11 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
-                <img src="{{ asset('images/card 11.png') }}" alt="Truly Yours"
+                <img src="{{ asset('images/home-truly-top.jpg') }}" alt="Truly Yours"
                      class="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-110 group-hover:opacity-0">
-                <img src="{{ asset('images/Frame 13.png') }}" alt="Truly Yours"
+                <img src="{{ asset('images/home-truly-bottom.jpg') }}" alt="Truly Yours"
                      class="absolute inset-0 w-full h-full object-cover object-center opacity-0 scale-110 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-100">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-all duration-500 group-hover:from-black/85"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-6 text-white transition-transform duration-500 group-hover:-translate-y-1">
@@ -143,9 +143,9 @@
 
             {{-- Card 2: Generational Craftsmanship — CARD 10 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
-                <img src="{{ asset('images/card 10.png') }}" alt="Generational Craftsmanship"
+                <img src="{{ asset('images/home-gen-top.jpg') }}" alt="Generational Craftsmanship"
                      class="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-110 group-hover:opacity-0">
-                <img src="{{ asset('images/Frame 14.png') }}" alt="Generational Craftsmanship"
+                <img src="{{ asset('images/home-gen-bottom.jpg') }}" alt="Generational Craftsmanship"
                      class="absolute inset-0 w-full h-full object-cover object-center opacity-0 scale-110 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-100">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-all duration-500 group-hover:from-black/85"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-6 text-white transition-transform duration-500 group-hover:-translate-y-1">
@@ -156,9 +156,9 @@
 
             {{-- Card 3: Finishing Care — CARD 9 --}}
             <div class="group relative overflow-hidden aspect-[4/5]">
-                <img src="{{ asset('images/card 9.png') }}" alt="Finishing Care"
+                <img src="{{ asset('images/home-finish-top.jpg') }}" alt="Finishing Care"
                      class="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-110 group-hover:opacity-0">
-                <img src="{{ asset('images/Frame 15.png') }}" alt="Finishing Care"
+                <img src="{{ asset('images/home-finish-bottom.jpg') }}" alt="Finishing Care"
                      class="absolute inset-0 w-full h-full object-cover object-center opacity-0 scale-110 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-100">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-all duration-500 group-hover:from-black/85"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-6 text-white transition-transform duration-500 group-hover:-translate-y-1">
@@ -179,8 +179,7 @@
     <div class="absolute inset-0">
         <video class="w-full h-full object-cover object-center" autoplay muted loop playsinline
                poster="{{ asset('images/frame 427319720.png') }}">
-            <source src="{{ asset('videos/weave.mp4') }}" type="video/mp4">
-            <source src="{{ asset('videos/weave.webm') }}" type="video/webm">
+            <source src="{{ asset('videos/loop-video.mp4') }}" type="video/mp4">
             <img src="{{ asset('images/frame 427319720.png') }}" alt="Weave Your Dream Rug" class="w-full h-full object-cover object-center">
         </video>
         <div class="absolute inset-0" style="background:rgba(18,18,18,0.52);"></div>

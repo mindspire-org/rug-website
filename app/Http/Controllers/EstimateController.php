@@ -56,22 +56,35 @@ class EstimateController extends Controller
             'total' => $total,
             'notes' => $data['notes'] ?? '',
             'customer_email' => $data['email'],
+            'phone' => SiteSetting::get('phone', '800-247-7847'),
+            'address' => SiteSetting::get('address', '37-11 48th Avenue, Long Island City, NY 11101'),
         ];
 
         // Business inbox that should receive every estimate request as a lead
         $businessEmail = SiteSetting::get('business_email') ?: config('mail.from.address');
+        $fromName = SiteSetting::get('site_name', config('app.name', 'Costikyan Custom Carpet'));
 
         try {
-            Mail::send('emails.estimate', $estimateData, function ($message) use ($data, $businessEmail) {
+            Mail::send(['html' => 'emails.estimate', 'text' => 'emails.estimate_text'], $estimateData, function ($message) use ($data, $businessEmail, $fromName) {
                 $message->to($data['email'])
-                    ->subject('Your Costikyan Custom Carpet Estimate');
-                if ($businessEmail) {
-                    // Capture the lead + let replies reach the studio
-                    $message->bcc($businessEmail)->replyTo($businessEmail, 'Costikyan Custom Carpet');
+                    ->from(config('mail.from.address'), $fromName)
+                    ->subject('Your Costikyan Custom Carpet Estimate — ' . $data['size'] ?? 'Standard')
+                    ->replyTo($businessEmail, $fromName);
+
+                // Proper email headers for deliverability
+                $headers = $message->getHeaders();
+                $headers->addTextHeader('X-Mailer', 'Costikyan Custom Carpet');
+                $headers->addTextHeader('X-Priority', '3');
+                $headers->addTextHeader('List-Unsubscribe', '<mailto:' . config('mail.from.address') . '?subject=Unsubscribe>');
+                $headers->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
+                $headers->addTextHeader('X-Auto-Response-Suppress', 'OOF, DR, RN, NRN, OoO');
+
+                if ($businessEmail && $businessEmail !== config('mail.from.address')) {
+                    $message->bcc($businessEmail);
                 }
             });
 
-            return back()->with('success', 'Your estimate has been emailed to ' . $data['email'] . '. Please check your inbox (and spam folder).');
+            return back()->with('success', 'Your estimate has been emailed to ' . $data['email'] . '. Please check your inbox.');
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Estimate email failed: ' . $e->getMessage());
             return back()->with('error', 'Could not send email right now. Please try again or contact us directly.');

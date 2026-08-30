@@ -8,7 +8,7 @@
   ══════════════════════════════════════════ --}}
 <section class="relative overflow-hidden flex items-end" style="height:55vh; min-height:380px;">
     <div class="absolute inset-0">
-        <img src="{{ asset('images/about-hero-poster.png') }}" alt="Costikyan workshop"
+        <img src="{{ asset('images/about-hero-poster-v2.png') }}" alt="Costikyan workshop"
              class="w-full h-full object-cover object-center">
         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.25) 100%);"></div>
     </div>
@@ -44,12 +44,12 @@
 
         @php
         $eras = [
-            ['year'=>'1880','img_a'=>'about-1880-a.png','img_b'=>'about-1880-b.png','title'=>'Origins in Constantinople','desc'=>'The Costikyan family\'s roots trace back to Constantinople, where generations were deeply involved in the traditional rug trade, developing expertise passed down through family lineage.'],
-            ['year'=>'1900','img_a'=>'about-1900-a.png','img_b'=>'about-1900-b.png','fit'=>'contain','title'=>'Arriving in America','desc'=>'After immigrating to New York, Costikyan expanded his business to serve the growing American market, bringing Old World craftsmanship to a new continent.'],
-            ['year'=>'1940','img_a'=>'about-1940-a.png','img_b'=>'about-1940-b.png','title'=>'Mid-Century Growth','desc'=>'Through the post-war boom, Costikyan supplied rugs to landmark hotels, cultural institutions, and the residences of prominent American families.'],
-            ['year'=>'1980','img_a'=>'about-1980-a.png','img_b'=>'about-1980-b.png','title'=>'Design Evolution','desc'=>'The company embraced contemporary design movements while maintaining its handcrafted traditions, collaborating with leading interior designers and architects.'],
-            ['year'=>'2000','img_a'=>'about-2000-a.png','img_b'=>'about-2000-b.png','title'=>'Global Reach','desc'=>'Entering the 21st century, Costikyan expanded globally, establishing partnerships with master weavers across Nepal, India, and Morocco.'],
-            ['year'=>'2025','img_a'=>'about-2025-a.png','img_b'=>'about-2025-b.png','title'=>'Custom by Design','desc'=>'Today, every rug we make starts with a conversation. Our custom rug programme — from blank canvas to finished piece — has become the cornerstone of our business.'],
+            ['year'=>'1880','img_a'=>'about-1880-a-v2.png','img_b'=>'about-1880-b-v2.png','title'=>'Origins in Constantinople','desc'=>'The Costikyan family\'s roots trace back to Constantinople, where generations were deeply involved in the traditional rug trade, developing expertise passed down through family lineage.'],
+            ['year'=>'1900','img_a'=>'about-1900-a-v2.png','img_b'=>'about-1900-b-v2.png','fit'=>'contain','title'=>'Arriving in America','desc'=>'After immigrating to New York, Costikyan expanded his business to serve the growing American market, bringing Old World craftsmanship to a new continent.'],
+            ['year'=>'1940','img_a'=>'about-1940-a-v2.png','img_b'=>'about-1940-b-v2.png','title'=>'Mid-Century Growth','desc'=>'Through the post-war boom, Costikyan supplied rugs to landmark hotels, cultural institutions, and the residences of prominent American families.'],
+            ['year'=>'1980','img_a'=>'about-1980-a-v2.png','img_b'=>'about-1980-b-v2.png','title'=>'Design Evolution','desc'=>'The company embraced contemporary design movements while maintaining its handcrafted traditions, collaborating with leading interior designers and architects.'],
+            ['year'=>'2000','img_a'=>'about-2000-a-v2.png','img_b'=>'about-2000-b-v2.png','title'=>'Global Reach','desc'=>'Entering the 21st century, Costikyan expanded globally, establishing partnerships with master weavers across Nepal, India, and Morocco.'],
+            ['year'=>'2025','img_a'=>'about-2025-a-v2.png','img_b'=>'about-2025-b-v2.png','title'=>'Custom by Design','desc'=>'Today, every rug we make starts with a conversation. Our custom rug programme — from blank canvas to finished piece — has become the cornerstone of our business.'],
         ];
         @endphp
 

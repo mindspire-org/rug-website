@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\FilterController;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Setting;
@@ -23,11 +24,15 @@ class ShopController extends Controller
 
     /** Material filter groups → keywords matched against products.material */
     private const MATERIAL_GROUPS = [
-        'Wool'               => ['wool'],
-        'Wool & Silk'        => ['wool & silk', 'wool and silk', 'silk and wool', 'silkette'],
-        'Silk'               => ['silk'],
-        'Natural Fibers'     => ['cotton', 'jute', 'sisal', 'seagrass', 'hemp', 'bamboo', 'viscose', 'linen'],
-        'Performance Fibers' => ['polypropylene', 'poly', 'nylon', 'acrylic', 'polyester', 'solution dyed', 'olefin'],
+        'Wool'                     => ['wool'],
+        'Wool and Synthetic Blend' => ['wool and synthetic', 'synthetic blend', 'wool & synthetic'],
+        'Silk'                     => ['silk'],
+        'Silk and Wool'            => ['silk and wool', 'wool and silk', 'wool & silk', 'silkette'],
+        'Nylon'                    => ['nylon'],
+        'Solution Dyed Nylon'      => ['solution dyed nylon', 'solution-dyed nylon'],
+        'Sisal/Plant Fibers'       => ['sisal', 'jute', 'seagrass', 'hemp', 'bamboo', 'cotton', 'viscose', 'linen', 'plant'],
+        'Solution-Dyed Acrylic'    => ['acrylic'],
+        'Polypropylene'            => ['polypropylene', 'poly', 'olefin', 'pet'],
     ];
 
     public function index(Request $request)
@@ -100,6 +105,12 @@ class ShopController extends Controller
             });
         }
 
+        // ── Use (Indoor / Indoor-Outdoor / Outdoor / Commercial) ──
+        if ($request->filled('use')) {
+            $uses = (array) $request->use;
+            $query->whereIn('use_type', $uses);
+        }
+
         // ── Pattern / Style (via product_filter_values OR direct column) ──
         if ($request->filled('pattern')) {
             $patterns = (array) $request->pattern;
@@ -112,11 +123,12 @@ class ShopController extends Controller
             });
         }
 
-        // ── Construction (matches construction-type category or filter values) ──
+        // ── Construction (direct column, category name, or filter values) ──
         if ($request->filled('construction')) {
             $constructions = (array) $request->construction;
             $query->where(function ($q) use ($constructions) {
-                $q->whereHas('category', function ($c) use ($constructions) {
+                $q->whereIn('construction', $constructions)
+                  ->orWhereHas('category', function ($c) use ($constructions) {
                         $c->whereIn('name', $constructions);
                     })
                   ->orWhereHas('filterValues', function ($sq) use ($constructions) {
@@ -126,35 +138,42 @@ class ShopController extends Controller
             });
         }
 
-        // ── Room (via product_filter_values) ───────────────────
+        // ── Room (direct column or filter values) ─────────────
         if ($request->filled('room')) {
             $rooms = (array) $request->room;
-            $query->whereHas('filterValues', function ($q) use ($rooms) {
-                $q->whereIn('value', $rooms)
-                  ->orWhereIn('display_value', $rooms);
+            $query->where(function ($q) use ($rooms) {
+                $q->whereIn('room_type', $rooms)
+                  ->orWhereHas('filterValues', function ($sq) use ($rooms) {
+                        $sq->whereIn('value', $rooms)
+                            ->orWhereIn('display_value', $rooms);
+                    });
             });
         }
 
-        // ── Size (via product_dimension_prices) ─────────────────
+        // ── Size (direct column or dimension price labels) ──────
         if ($request->filled('size')) {
             $sizes = (array) $request->size;
-            $query->whereHas('dimensionPrices', function ($q) use ($sizes) {
-                $q->whereIn('label', $sizes);
+            $query->where(function ($q) use ($sizes) {
+                $q->whereIn('size_category', $sizes)
+                  ->orWhereHas('dimensionPrices', function ($sq) use ($sizes) {
+                        $sq->whereIn('label', $sizes);
+                    });
             });
         }
 
-        // ── Availability (maps to categories) ─────────────────
+        // ── Availability (direct column or category slug) ──────
         if ($request->filled('availability')) {
             $avail = (array) $request->availability;
             $query->where(function ($q) use ($avail) {
+                $q->whereIn('availability', $avail);
                 if (in_array('In Stock', $avail)) {
                     $q->orWhereHas('category', fn($c) => $c->where('slug', 'in-stock'));
                 }
                 if (in_array('Custom Size', $avail)) {
-                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'custom-designs'));
-                }
-                if (in_array('Made to Order', $avail)) {
                     $q->orWhereHas('category', fn($c) => $c->where('slug', 'made-to-order'));
+                }
+                if (in_array('Fully Custom', $avail)) {
+                    $q->orWhereHas('category', fn($c) => $c->where('slug', 'custom-designs'));
                 }
             });
         }
@@ -189,13 +208,14 @@ class ShopController extends Controller
         // blade defaults, matched by keyword in the queries above) — showing 193 raw
         // colours / junk material rows would be unusable. Pattern/Size/Construction
         // are derived from REAL product data so the values match exactly.
-        $realOptions = array_filter([
+        $adminOptions = FilterController::getOptions();
+        $filterOptions = array_filter([
             'pattern'      => Product::active()->whereNotNull('style')->where('style', '!=', '')->distinct()->orderBy('style')->pluck('style')->all(),
-            'size'         => \App\Models\ProductDimensionPrice::whereNotNull('label')->where('label', '!=', '')->distinct()->orderBy('label')->pluck('label')->all(),
-            'construction' => Category::whereIn('slug', ['hand-knotted', 'hand-tufted', 'machine-loomed', 'flat-weave', 'hand-loomed'])->pluck('name')->all(),
+            'size'         => $adminOptions['size'] ?? [],
+            'construction' => $adminOptions['construction'] ?? [],
+            'room'         => $adminOptions['room'] ?? [],
+            'availability' => $adminOptions['availability'] ?? [],
         ]);
-
-        $filterOptions = $realOptions;
 
         return view('shop.index', compact('products', 'categories', 'materials', 'filterOptions'));
     }

@@ -2,12 +2,14 @@
 @section('title', 'Order ' . $order->order_number)
 
 @section('dashboard-content')
-<div class="flex items-center gap-4 mb-8">
-    <a href="{{ route('dashboard.orders') }}" class="text-stone-400 hover:text-stone-900 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-    </a>
-    <h1 class="font-serif text-2xl font-bold">Order {{ $order->order_number }}</h1>
-    <span class="badge {{ $order->status_badge }} capitalize ml-auto">{{ $order->status }}</span>
+<div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 lg:mb-8">
+    <div class="flex items-center gap-3 sm:gap-4">
+        <a href="{{ route('dashboard.orders') }}" class="text-stone-400 hover:text-stone-900 transition-colors flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <h1 class="font-serif text-xl lg:text-2xl font-bold">Order {{ $order->order_number }}</h1>
+    </div>
+    <span class="badge {{ $order->status_badge }} capitalize self-start sm:ml-auto">{{ $order->status }}</span>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">

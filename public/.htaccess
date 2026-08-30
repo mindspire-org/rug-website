@@ -1,9 +1,36 @@
+# ── Disable LiteSpeed cache for dynamic Laravel responses ──
+# Prevents LiteSpeed from serving stale/broken cached pages that cause
+# Chrome's "Unsafe attempt to load URL from chrome-error://" reloads.
+<IfModule LiteSpeed>
+    CacheLookup off
+    RewriteEngine On
+    RewriteRule .* - [E=Cache-Control:no-cache]
+</IfModule>
+
+# Prevent caching of error responses (5xx, 4xx) by proxies/CDNs
+<IfModule mod_headers.c>
+    # Never cache HTML/json from this app
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate" "expr=%{CONTENT_TYPE} =~ m#text/html#i"
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate" "expr=%{CONTENT_TYPE} =~ m#application/json#i"
+
+    # Allow browser caching for static assets (CSS/JS/images/fonts)
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
 
     RewriteEngine On
+
+    # Force HTTPS — protocol mismatch (http vs https) is a common cause
+    # of the "protocols and ports must match" console error.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
