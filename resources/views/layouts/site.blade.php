@@ -6,14 +6,31 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Costikyan Custom Carpet') | Est. 1886</title>
     <meta name="description" content="@yield('meta_description', 'Costikyan Custom Carpet – handcrafted rugs made to your specifications since 1886.')">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', 'Costikyan Custom Carpet') | Est. 1886">
+    <meta property="og:description" content="@yield('meta_description', 'Costikyan Custom Carpet – handcrafted rugs made to your specifications since 1886.')">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_image', asset('images/cover.jpg'))">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'Costikyan Custom Carpet') | Est. 1886">
+    <meta name="twitter:description" content="@yield('meta_description', 'Costikyan Custom Carpet – handcrafted rugs made to your specifications since 1886.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/cover.jpg'))">
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16.png') }}">
+    <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#111111">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lusitana:wght@400;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="font-sans antialiased bg-white text-stone-900 pb-[64px] md:pb-0" x-data="{ mobileOpen: false, searchOpen: false }">
+<body class="font-sans antialiased bg-white text-stone-900 pb-[64px] md:pb-0 overflow-x-hidden" x-data="{ mobileOpen: false, searchOpen: false }" style="overflow-x:hidden;">
 
 {{-- ══════════════════════════════════════════
      NEWSLETTER POPUP — shows once per session
@@ -125,7 +142,7 @@
                     <input type="checkbox" x-model="agreed" class="mt-0.5 flex-shrink-0" style="width:16px; height:16px; accent-color:#121212; cursor:pointer;">
                     <span style="font-size:13px; color:rgba(18,18,18,0.7); line-height:1.5;">
                         By signing up, you agree to our
-                        <a href="#" style="color:#121212; font-weight:600; text-decoration:none; border-bottom:1px solid rgba(18,18,18,0.3);">Terms &amp; Conditions</a>
+                        <a href="{{ route('terms') }}" target="_blank" style="color:#121212; font-weight:600; text-decoration:none; border-bottom:1px solid rgba(18,18,18,0.3);">Terms &amp; Conditions</a>
                     </span>
                 </label>
 
@@ -160,21 +177,19 @@
 @endif
 
 {{-- HEADER --}}
-<header class="sticky top-0 z-40 bg-[#111111] border-b border-white/10" x-data="{ cartCount: 0 }" x-init="fetch('/cart/count').then(r=>r.json()).then(d=> cartCount = d.count)">
+<header class="sticky top-0 z-40 bg-[#111111] border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-[54px] md:h-[60px]">
 
-            {{-- Logo --}}
-            <a href="{{ route('home') }}" class="flex-shrink-0 flex flex-col">
-                <div class="flex items-stretch border border-white/20">
-                    <div class="w-[5px] bg-orange-600 flex-shrink-0"></div>
-                    <div class="px-2.5 py-[5px] flex items-center gap-0.5">
-                        <span class="font-serif font-bold text-white text-[14px] md:text-[15px] tracking-[0.18em] leading-none">COSTI<span class="text-orange-500">K</span>YAN</span>
-                        <sup class="text-white/50 text-[7px] leading-none mt-[-4px]">™</sup>
-                    </div>
-                </div>
-                <span class="text-[9px] text-stone-500 tracking-[0.2em] uppercase mt-[3px] pl-[6px]">Since 1886</span>
-            </a>
+            {{-- Menu (mobile) + Logo --}}
+            <div class="flex items-center gap-3">
+                <button @click="mobileOpen = true" class="md:hidden text-white/90 hover:text-white -ml-1 p-1" aria-label="Open menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <a href="{{ route('home') }}" class="flex-shrink-0">
+                    <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet — Since 1886" style="height:42px; width:auto; display:block;">
+                </a>
+            </div>
 
             {{-- Desktop Nav --}}
             <nav class="hidden md:flex items-center gap-8">
@@ -190,15 +205,29 @@
 
             {{-- Right icons --}}
             <div class="flex items-center gap-4">
+                {{-- Cart — minimal modern basket icon with count badge --}}
+                <a href="{{ route('cart.index') }}" class="relative text-white/80 hover:text-white transition-colors group" title="Cart">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.17 0 .318.114.362.278l2.755 9.978c.097.354.42.599.79.599h10.5a.75.75 0 0 0 .68-.43l2.46-5.538a.75.75 0 0 0-1.36-.604L16.697 8.25H4.268l-.577-2.09a.75.75 0 0 0-.722-.543H2.25z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM18.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    </svg>
+                    {{-- Count badge --}}
+                    <span id="header-cart-badge"
+                          class="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-white text-[10px] font-bold leading-none px-1"
+                          style="background: #E8651A; display: none;">
+                        0
+                    </span>
+                </a>
+
                 {{-- Search (visible on both) --}}
-                <button @click="searchOpen = !searchOpen" class="text-white/80 hover:text-white transition-colors">
+                <button @click="searchOpen = !searchOpen" class="text-white/80 hover:text-white transition-colors" title="Search">
                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
                 </button>
 
                 {{-- Desktop-only account dropdown --}}
                 @auth
                 <div class="relative group hidden md:block">
-                    <button class="text-white/80 hover:text-white transition-colors">
+                    <button class="text-white/80 hover:text-white transition-colors" title="Account">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
                     </button>
                     <div class="absolute top-full right-0 mt-2 w-48 bg-stone-900 border border-stone-700 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -206,6 +235,7 @@
                         <a href="{{ route('dashboard') }}" class="block px-4 py-2.5 text-sm text-stone-300 hover:text-white hover:bg-stone-800">My Account</a>
                         <a href="{{ route('dashboard.orders') }}" class="block px-4 py-2.5 text-sm text-stone-300 hover:text-white hover:bg-stone-800">My Orders</a>
                         <a href="{{ route('wishlist.index') }}" class="block px-4 py-2.5 text-sm text-stone-300 hover:text-white hover:bg-stone-800">Wishlist</a>
+                        <a href="{{ route('room.visualizations') }}" class="block px-4 py-2.5 text-sm text-stone-300 hover:text-white hover:bg-stone-800">My Visualizations</a>
                         @if(Auth::user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm text-amber-400 hover:bg-stone-800">Admin Panel</a>
                         @endif
@@ -218,22 +248,17 @@
                     </div>
                 </div>
                 @else
-                <a href="{{ route('login') }}" class="hidden md:block text-white/80 hover:text-white transition-colors">
+                <a href="{{ route('login') }}" title="Account" class="hidden md:block text-white/80 hover:text-white transition-colors">
                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
                 </a>
                 @endauth
 
                 {{-- Desktop wishlist --}}
-                @auth
-                <a href="{{ route('wishlist.index') }}" class="hidden md:block text-white/80 hover:text-white transition-colors">
+                <a href="{{ Auth::check() ? route('wishlist.index') : route('login') }}"
+                   title="Wishlist"
+                   class="hidden md:block text-white/80 hover:text-white transition-colors">
                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </a>
-                @endauth
-                @guest
-                <a href="{{ route('login') }}" class="hidden md:block text-white/80 hover:text-white transition-colors">
-                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                </a>
-                @endguest
             </div>
         </div>
     </div>
@@ -249,6 +274,52 @@
     </div>
 </header>
 
+{{-- ── MOBILE NAV DRAWER (matches desktop nav) ── --}}
+<style>
+    .cc-navoverlay { position:fixed; inset:0; z-index:70; background:rgba(0,0,0,0.5); display:none; }
+    .cc-navoverlay.cc-navopen { display:block; }
+    .cc-navdrawer { position:fixed; top:0; left:0; bottom:0; z-index:71; width:82%; max-width:320px; background:#111111; overflow-y:auto; box-shadow:2px 0 18px rgba(0,0,0,0.4); display:none; }
+    .cc-navdrawer.cc-navopen { display:block; }
+    @media (min-width:768px) { .cc-navoverlay, .cc-navdrawer { display:none !important; } }
+</style>
+<div class="md:hidden">
+    {{-- Overlay --}}
+    <div class="cc-navoverlay" :class="mobileOpen ? 'cc-navopen' : ''" @click="mobileOpen = false"></div>
+    {{-- Panel --}}
+    <div class="cc-navdrawer" :class="mobileOpen ? 'cc-navopen' : ''">
+        <div class="flex items-center justify-between px-5 h-[54px] border-b border-white/10">
+            <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan" style="height:34px; width:auto;">
+            <button @click="mobileOpen = false" class="text-white/80 hover:text-white p-1" aria-label="Close menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <nav class="flex flex-col py-3">
+            <a href="{{ route('shop.index') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Our Collection</a>
+            <a href="{{ route('weave') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Weave Your Dream Rug</a>
+            <a href="{{ route('about') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">About</a>
+            @auth
+            <a href="{{ route('trade.portal.dashboard') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Trade Portal</a>
+            @else
+            <a href="{{ route('trade') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Trade</a>
+            @endauth
+            <a href="{{ Auth::check() ? route('wishlist.index') : route('login') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Wishlist</a>
+            <a href="{{ route('cart.index') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">Cart</a>
+            @auth
+            <a href="{{ route('dashboard') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">My Account</a>
+            <a href="{{ route('dashboard.orders') }}" class="px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5 border-b border-white/5">My Orders</a>
+            @if(Auth::user()->isAdmin())
+            <a href="{{ route('admin.dashboard') }}" class="px-5 py-3.5 text-[15px] text-amber-400 hover:bg-white/5 border-b border-white/5">Admin Panel</a>
+            @endif
+            <form method="POST" action="{{ route('logout') }}">@csrf
+                <button type="submit" class="w-full text-left px-5 py-3.5 text-[15px] text-white/90 hover:text-white hover:bg-white/5">Logout</button>
+            </form>
+            @else
+            <a href="{{ route('login') }}" class="mx-5 mt-3 text-center text-stone-900 font-medium text-[15px] py-3" style="background:#E8651A; border-radius:4px;">Log In / Sign Up</a>
+            @endauth
+        </nav>
+    </div>
+</div>
+
 {{-- Page Content --}}
 <main>
     @yield('content')
@@ -261,30 +332,24 @@
 
             {{-- ── COL 1: Logo + Social + Contact ── --}}
             <div class="col-span-2 md:col-span-1">
-                {{-- Large logo box --}}
+                {{-- Large logo --}}
                 <a href="{{ route('home') }}" class="inline-block mb-7">
-                    <div class="flex items-stretch border border-white/15 bg-[#232323]" style="min-width:200px">
-                        <div class="w-[7px] bg-orange-600 flex-shrink-0"></div>
-                        <div class="px-4 py-3 flex items-center gap-1">
-                            <span class="font-serif font-bold text-white text-[22px] tracking-[0.18em] leading-none">COSTI<span class="text-orange-500">K</span>YAN</span>
-                            <sup class="text-white/40 text-[9px] leading-none" style="margin-top:-6px">™</sup>
-                        </div>
-                    </div>
+                    <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet" style="height:56px; width:auto; display:block;">
                 </a>
 
                 {{-- Connect With Us --}}
                 <p class="text-[11px] text-stone-500 uppercase tracking-widest mb-3">Connect With Us</p>
                 <div class="flex items-center gap-2 mb-7">
                     {{-- Facebook --}}
-                    <a href="#" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
+                    <a href="https://www.facebook.com/people/Costikyan-Custom-Carpet/61584537811008/" target="_blank" rel="noopener" aria-label="Facebook" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
                         <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                     </a>
                     {{-- Instagram --}}
-                    <a href="#" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
+                    <a href="https://www.instagram.com/costikyancustomcarpet" target="_blank" rel="noopener" aria-label="Instagram" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                     </a>
                     {{-- YouTube --}}
-                    <a href="#" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
+                    <a href="https://www.youtube.com/@CostikyanCustom" target="_blank" rel="noopener" aria-label="YouTube" class="w-8 h-8 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:text-white hover:border-stone-500 transition-colors">
                         <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>
                     </a>
                 </div>
@@ -294,11 +359,18 @@
                 <div class="space-y-2">
                     <div class="flex items-center gap-2.5 text-[13px] text-stone-400">
                         <svg class="w-3.5 h-3.5 text-stone-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                        <span>800-247-7847</span>
+                        <a href="tel:+18002477847" class="hover:text-white transition-colors">800-247-7847</a>
                     </div>
                     <div class="flex items-center gap-2.5 text-[13px] text-stone-400">
                         <svg class="w-3.5 h-3.5 text-stone-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg>
-                        <span>info@costikyancustomcarpet.com</span>
+                        <a href="mailto:info@costikyancustomcarpet.com" class="hover:text-white transition-colors">info@costikyancustomcarpet.com</a>
+                    </div>
+                    <div class="flex items-start gap-2.5 text-[13px] text-stone-400">
+                        <svg class="w-3.5 h-3.5 text-stone-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+                        <a href="https://maps.google.com/?q=37-11+48th+Avenue,+Long+Island+City,+NY+11101"
+                           target="_blank" rel="noopener" class="hover:text-white transition-colors">
+                            37-11 48th Avenue<br>Long Island City, NY 11101
+                        </a>
                     </div>
                 </div>
             </div>
@@ -316,8 +388,8 @@
                 <div class="w-full h-px bg-stone-700 mb-5"></div>
                 <ul class="space-y-3">
                     <li><a href="{{ route('contact') }}" class="text-[13px] text-stone-400 hover:text-white transition-colors">Contact</a></li>
-                    <li><a href="#" class="text-[13px] text-stone-400 hover:text-white transition-colors">Delivery &amp; Lead Times</a></li>
-                    <li><a href="#" class="text-[13px] text-stone-400 hover:text-white transition-colors">Care &amp; Maintenance</a></li>
+                    <li><a href="{{ route('about') }}" class="text-[13px] text-stone-400 hover:text-white transition-colors">Delivery &amp; Lead Times</a></li>
+                    <li><a href="https://www.costikyan.com/" target="_blank" rel="noopener" class="text-[13px] text-stone-400 hover:text-white transition-colors">Care &amp; Maintenance</a></li>
                 </ul>
             </div>
 
@@ -326,7 +398,7 @@
                 <h4 class="text-white text-[15px] font-medium mb-2">Services</h4>
                 <div class="w-full h-px bg-stone-700 mb-5"></div>
                 <ul class="space-y-3">
-                    <li><a href="{{ route('services') }}" class="text-[13px] text-stone-400 hover:text-white transition-colors">Visit Our Services Site</a></li>
+                    <li><a href="https://www.costikyan.com/" target="_blank" rel="noopener" class="text-[13px] text-stone-400 hover:text-white transition-colors">Visit Our Services Site</a></li>
                 </ul>
             </div>
 
@@ -353,8 +425,8 @@
         <div class="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-3">
             <p class="text-[12px] text-stone-600">© {{ date('Y') }} Costikyan Custom Carpet · Est. 1886</p>
             <div class="flex gap-7">
-                <a href="#" class="text-[12px] text-stone-600 hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" class="text-[12px] text-stone-600 hover:text-white transition-colors">Terms of Service</a>
+                <a href="{{ route('privacy') }}" class="text-[12px] text-stone-600 hover:text-white transition-colors">Privacy Policy</a>
+                <a href="{{ route('terms') }}" class="text-[12px] text-stone-600 hover:text-white transition-colors">Terms of Service</a>
             </div>
         </div>
     </div>
@@ -385,6 +457,24 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/>
         </svg>
         <span style="font-size:10px; letter-spacing:0.02em;">Shop</span>
+    </a>
+
+    {{-- Cart — minimal modern basket icon with count badge --}}
+    <a href="{{ route('cart.index') }}"
+       class="flex-1 flex flex-col items-center justify-center gap-1 transition-colors
+              {{ request()->routeIs('cart.*') ? 'text-amber-400' : 'text-stone-500 hover:text-stone-200' }}">
+        <div class="relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.17 0 .318.114.362.278l2.755 9.978c.097.354.42.599.79.599h10.5a.75.75 0 0 0 .68-.43l2.46-5.538a.75.75 0 0 0-1.36-.604L16.697 8.25H4.268l-.577-2.09a.75.75 0 0 0-.722-.543H2.25z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM18.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            </svg>
+            <span id="mobile-cart-badge"
+                  class="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] flex items-center justify-center rounded-full text-white text-[8px] font-bold leading-none px-0.5"
+                  style="background: #E8651A; display: none;">
+                0
+            </span>
+        </div>
+        <span style="font-size:10px; letter-spacing:0.02em;">Cart</span>
     </a>
 
     {{-- Search (centre, larger pill) --}}
@@ -431,6 +521,94 @@
     </a>
     @endauth
 </nav>
+
+{{-- ══════════════════════════════════════════
+     MOBILE FLOATING CART BUTTON
+     Appears when cart has items, fixed bottom-right
+══════════════════════════════════════════ --}}
+<a href="{{ route('cart.index') }}"
+   id="cart-fab"
+   class="md:hidden fixed bottom-[80px] right-4 z-50 w-[52px] h-[52px] rounded-full items-center justify-center shadow-xl"
+   style="background: linear-gradient(135deg, #E8651A 0%, #EDB84A 100%); display: none;">
+    <div class="relative">
+        <svg class="w-[22px] h-[22px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.17 0 .318.114.362.278l2.755 9.978c.097.354.42.599.79.599h10.5a.75.75 0 0 0 .68-.43l2.46-5.538a.75.75 0 0 0-1.36-.604L16.697 8.25H4.268l-.577-2.09a.75.75 0 0 0-.722-.543H2.25z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM18.75 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+        </svg>
+        <span id="fab-cart-badge"
+              class="absolute -top-2.5 -right-2.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-white text-stone-900 text-[10px] font-bold leading-none px-1"
+              style="display: none;">
+            0
+        </span>
+    </div>
+</a>
+
+<script>
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.wishlist-toggle');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (btn.dataset.authenticated !== 'true') {
+        window.location.href = '/login';
+        return;
+    }
+    const productId = btn.dataset.productId;
+    const isIn = btn.dataset.inWishlist === 'true';
+    const svg = btn.querySelector('svg');
+    fetch('/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ product_id: productId })
+    }).then(r => {
+        if (r.ok) {
+            const newState = !isIn;
+            btn.dataset.inWishlist = newState ? 'true' : 'false';
+            if (newState) {
+                btn.classList.remove('text-white/80', 'text-stone-400');
+                btn.classList.add('text-red-500');
+                if (svg) { svg.setAttribute('fill', 'currentColor'); svg.setAttribute('stroke', 'none'); }
+            } else {
+                btn.classList.remove('text-red-500');
+                if (btn.closest('.product-card')) {
+                    btn.classList.add('text-white/80');
+                } else {
+                    btn.classList.add('text-stone-400');
+                }
+                if (svg) { svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor'); }
+            }
+        }
+    }).catch(() => {});
+});
+</script>
+
+<script>
+(function() {
+    function updateCartBadges(count) {
+        const show = count > 0;
+        const display = show ? 'flex' : 'none';
+        const els = {
+            header: document.getElementById('header-cart-badge'),
+            mobile: document.getElementById('mobile-cart-badge'),
+            fab:    document.getElementById('cart-fab'),
+            fabBadge: document.getElementById('fab-cart-badge'),
+        };
+        if (els.header) { els.header.textContent = count; els.header.style.display = display; }
+        if (els.mobile) { els.mobile.textContent = count; els.mobile.style.display = display; }
+        if (els.fabBadge) { els.fabBadge.textContent = count; els.fabBadge.style.display = display; }
+        if (els.fab) { els.fab.style.display = display; }
+    }
+
+    fetch('/cart/count', { headers: { 'Accept': 'application/json' } })
+        .then(r => r.ok ? r.json() : { count: 0 })
+        .then(d => updateCartBadges(d.count || 0))
+        .catch(() => {});
+})();
+</script>
 
 @stack('scripts')
 @livewireScripts

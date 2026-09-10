@@ -22,7 +22,8 @@
         {{-- Logo --}}
         <div class="px-5 py-5 border-b border-stone-100">
             <a href="{{ route('home') }}" class="block">
-                <span style="font-family:'Lusitana',serif; font-size:18px; font-weight:700; color:#121212; letter-spacing:0.04em;">COSTIKYAN</span>
+                <img src="{{ asset('images/costikyan-logo.png') }}" alt="Costikyan Custom Carpet"
+                     style="height:34px; width:auto; display:block;">
             </a>
         </div>
 
